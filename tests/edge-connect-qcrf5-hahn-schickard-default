@@ -1,0 +1,6 @@
+#!/bin/bash
+
+while true; do
+    echo "Simulate a process message"
+    sleep 1
+done
