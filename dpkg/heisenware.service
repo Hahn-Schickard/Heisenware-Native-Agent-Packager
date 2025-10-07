@@ -1,0 +1,14 @@
+[Unit]
+Description={DESCRIPTION}
+After=multi-user.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/{HEISENWARE_AGENT_BINARY}
+StandardOutput=journal
+StandardError=journal
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

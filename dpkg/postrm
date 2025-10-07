@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade)
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        then
+            echo "postrm reloading systemd daemon"
+            systemctl --system daemon-reload
+        fi
+    ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

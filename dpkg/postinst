@@ -1,0 +1,37 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    configure)
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        then
+            echo "postinst updating {SERVICE_NAME} unit"
+            deb-systemd-helper update-state '{SERVICE_NAME}'
+        fi
+
+        if [ ! $(deb-systemd-helper --quiet is-enabled '{SERVICE_NAME}') ];
+        then
+            echo "postinst enabling {SERVICE_NAME} unit"
+            deb-systemd-helper enable '{SERVICE_NAME}'
+        fi
+
+        echo "postinst starting {SERVICE_NAME} unit"
+        deb-systemd-invoke start '{SERVICE_NAME}'
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        then
+            echo "postinst restarting original {SERVICE_NAME} unit"
+            systemctl --system daemon-reload
+            deb-systemd-invoke restart '{SERVICE_NAME}'
+        fi
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+exit 0

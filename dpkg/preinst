@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+case "$1" in
+    install|upgrade)
+        if systemctl is-active --quiet {SERVICE_NAME}; then
+            echo "preinst stopping {SERVICE_NAME} unit"
+            deb-systemd-invoke stop '{SERVICE_NAME}'
+        fi
+    ;;
+
+    abort-upgrade)
+    ;;
+
+    *)
+        echo "preinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
