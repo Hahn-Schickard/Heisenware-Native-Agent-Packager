@@ -1,20 +1,28 @@
 import shutil
 import subprocess
-import sys
-import os
+# import os
+from pathlib import Path
 from datetime import date
 
 MAX_SYNOPSIS_LEN = 80
 
 
 def make_clean_dir(dir_path: str):
-    if os.path.isdir(dir_path):
+    path = Path(dir_path)
+    if path.is_dir():
         shutil.rmtree(dir_path)
-    os.makedirs(dir_path)
+
+    path.mkdir(parents=True, exist_ok=True)
+    path.chmod(0o755)
+
+    # for root, dirs, _ in os.walk(dir_path):
+    #     for directory in dirs:
+    #         os.chmod(os.path.join(root, directory), 0o755)
 
 
 def read_file_content(file_path: str):
-    if not os.path.exists(file_path):
+    path = Path(file_path)
+    if not path.exists():
         raise FileNotFoundError(f'File {file_path} does not exist')
 
     with open(file=file_path, mode='r', encoding='utf-8') as file:
@@ -42,23 +50,22 @@ class __Packager:
                  version: str,
                  arch: str
                  ):
-        self.cwd = work_dir
+        self.cwd = Path(work_dir)
         self.package_name = name
         self.binary_path = binary_path
         self.version = version
         self.arch = arch
-        self.binary_name = os.path.basename(self.binary_path)
-        self.package_dir = os.path.join(
-            self.cwd, f'{self.package_name}_{self.version}_{self.arch}')
-        self.control_dir = os.path.join(self.package_dir, 'DEBIAN')
-        self.synopsis_file = os.path.join(self.cwd, 'generic', 'synopsis')
-        self.description_file = os.path.join(
-            self.cwd, 'generic', 'description')
-        self.license_file = os.path.join(self.cwd, 'generic', 'LICENSE')
+        self.binary_name = Path(self.binary_path).name
+        self.package_dir = self.cwd / \
+            f'{self.package_name}_{self.version}_{self.arch}'
+        self.control_dir = self.package_dir / 'DEBIAN'
+        self.synopsis_file = self.cwd / 'generic' / 'synopsis'
+        self.description_file = self.cwd / 'generic' / 'description'
+        self.license_file = self.cwd / 'generic' / 'LICENSE'
 
     def setup_workplace(self):
-        template_dir = os.path.join(self.cwd, 'dpkg')
-        if not os.path.isdir(template_dir):
+        template_dir = self.cwd / 'dpkg'
+        if not template_dir.is_dir():
             raise FileNotFoundError(f'Directory {template_dir} does not exist')
 
         make_clean_dir(self.control_dir)
@@ -67,7 +74,7 @@ class __Packager:
                         dirs_exist_ok=True)
 
     def update_control(self):
-        control_file = os.path.join(self.control_dir, 'control')
+        control_file = self.control_dir / 'control'
         content = read_file_content(control_file)
 
         content = content.replace('{NAME}', self.package_name)
@@ -85,7 +92,7 @@ class __Packager:
         write_file_content(control_file, content)
 
     def update_copytright(self):
-        copyright_file = os.path.join(self.control_dir, 'copyright')
+        copyright_file = self.control_dir / 'copyright'
         content = content = read_file_content(copyright_file)
 
         this_year = date.today().year
@@ -95,16 +102,15 @@ class __Packager:
         content = content.replace('{LICENSE_TEXT}', license_text)
 
         write_file_content(copyright_file, content)
-        copyright_install_dir = os.path.join(
-            self.package_dir, 'usr', 'share', 'doc', self.package_name)
+        copyright_install_dir = self.package_dir / \
+            'usr' / 'share' / 'doc' / self.package_name
         make_clean_dir(copyright_install_dir)
         shutil.move(src=copyright_file, dst=copyright_install_dir)
 
     def update_daemon(self):
-        daemon_template = os.path.join(self.control_dir, 'daemon.service')
-        daemon_service = os.path.join(
-            self.control_dir, f'{self.package_name}.service')
-        os.rename(src=daemon_template, dst=daemon_service)
+        daemon_template = self.control_dir / 'daemon.service'
+        daemon_service = self.control_dir / f'{self.package_name}.service'
+        daemon_template.rename(daemon_service)
 
         content = read_file_content(daemon_service)
 
@@ -117,22 +123,21 @@ class __Packager:
 
         write_file_content(daemon_service, content)
 
-        daemon_install_dir = os.path.join(
-            self.package_dir, 'usr', 'lib', 'systemd', 'system')
+        daemon_install_dir = self.package_dir / 'usr' / 'lib' / 'systemd' / 'system'
         make_clean_dir(daemon_install_dir)
         shutil.move(src=daemon_service, dst=daemon_install_dir)
 
     def update_scripts(self):
-        preinst_file = os.path.join(self.control_dir, 'preinst')
+        preinst_file = self.control_dir / 'preinst'
         update_script(preinst_file, self.package_name)
 
-        postinst_file = os.path.join(self.control_dir, 'postinst')
+        postinst_file = self.control_dir / 'postinst'
         update_script(postinst_file, self.package_name)
 
-        prerm_file = os.path.join(self.control_dir, 'prerm')
+        prerm_file = self.control_dir / 'prerm'
         update_script(prerm_file, self.package_name)
 
-        postrm_file = os.path.join(self.control_dir, 'postrm')
+        postrm_file = self.control_dir / 'postrm'
         update_script(postrm_file, self.package_name)
 
     def build(self):
@@ -153,8 +158,8 @@ def make(work_dir: str, name: str, binary_path: str, version: str, arch: str):
     packager = __Packager(work_dir, name, binary_path, version, arch)
     packager.setup_workplace()
 
-    full_binary_path = os.path.join(work_dir, binary_path)
-    install_dir = os.path.join(packager.package_dir, 'usr', 'bin')
+    full_binary_path = Path(work_dir) / binary_path
+    install_dir = packager.package_dir / 'usr' / 'bin'
     make_clean_dir(install_dir)
     shutil.copy(src=full_binary_path, dst=install_dir)
 
