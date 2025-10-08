@@ -71,6 +71,7 @@ class __Packager:
 
         shutil.copytree(src=template_dir, dst=self.control_dir,
                         dirs_exist_ok=True)
+        self.control_dir.chmod(0o755)
 
     def update_control(self):
         control_file = self.control_dir / 'control'
