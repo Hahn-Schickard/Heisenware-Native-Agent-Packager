@@ -59,4 +59,4 @@ if __name__ == '__main__':
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
     this_dir = Path(Path(__file__).absolute()).parent
 
-    dpkg.make(this_dir, args.output_dir, package_name, args.input_file, args.version, args.target_system)
+    dpkg.make(this_dir, args.output_dir, package_name, Path(args.input_file), args.version, args.target_system)
