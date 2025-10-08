@@ -3,7 +3,7 @@ set -e
 
 case "$1" in
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade)
-        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
         then
             echo "postrm reloading systemd daemon"
             systemctl --system daemon-reload

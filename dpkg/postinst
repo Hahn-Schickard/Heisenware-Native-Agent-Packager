@@ -3,28 +3,28 @@ set -e
 
 case "$1" in
     configure)
-        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
         then
             echo "postinst updating {SERVICE_NAME} unit"
-            deb-systemd-helper update-state '{SERVICE_NAME}'
+            deb-systemd-helper update-state '{SERVICE_NAME}.service'
         fi
 
-        if [ ! $(deb-systemd-helper --quiet is-enabled '{SERVICE_NAME}') ];
+        if [ ! $(deb-systemd-helper --quiet is-enabled '{SERVICE_NAME}.service') ];
         then
             echo "postinst enabling {SERVICE_NAME} unit"
-            deb-systemd-helper enable '{SERVICE_NAME}'
+            systemctl enable '{SERVICE_NAME}.service'
         fi
 
         echo "postinst starting {SERVICE_NAME} unit"
-        deb-systemd-invoke start '{SERVICE_NAME}'
+        systemctl start '{SERVICE_NAME}.service'
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)
-        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
         then
             echo "postinst restarting original {SERVICE_NAME} unit"
             systemctl --system daemon-reload
-            deb-systemd-invoke restart '{SERVICE_NAME}'
+            systemctl restart '{SERVICE_NAME}.service'
         fi
     ;;
 

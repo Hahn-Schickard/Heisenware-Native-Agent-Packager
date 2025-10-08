@@ -3,9 +3,9 @@ set -e
 
 case "$1" in
     install|upgrade)
-        if systemctl is-active --quiet {SERVICE_NAME}; then
+        if systemctl is-active --quiet '{SERVICE_NAME}.service'; then
             echo "preinst stopping {SERVICE_NAME} unit"
-            deb-systemd-invoke stop '{SERVICE_NAME}'
+            deb-systemd-invoke stop '{SERVICE_NAME}.service'
         fi
     ;;
 

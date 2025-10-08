@@ -3,19 +3,19 @@ set -e
 
 case "$1" in
     remove|upgrade|deconfigure)
-        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
         then
             echo "prerm stopping {SERVICE_NAME} unit"
-            deb-systemd-invoke stop '{SERVICE_NAME}'
+            systemctl stop '{SERVICE_NAME}.service'
         fi
     ;;
 
     failed-upgrade)
-        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}';
+        if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
         then
             echo "prerm restarting original {SERVICE_NAME} unit"
             systemctl --system daemon-reload
-            deb-systemd-invoke restart '{SERVICE_NAME}'
+            systemctl restart '{SERVICE_NAME}.service'
         fi
     ;;
 
