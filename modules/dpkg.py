@@ -142,13 +142,13 @@ class __Packager:
 
     def build(self):
         dpkg_found = subprocess.run(
-            ['dpkg-deb', '--version'], capture_output=True)
+            ['dpkg-deb', '--version'], capture_output=True, check=False)
         if dpkg_found.returncode != 0:
             raise FileNotFoundError('dpkg-deb not found')
 
         archive_name = f'{self.package_name}_{self.version}_{self.arch}'
         subprocess.run(
-            ['dpkg-deb', '--build', '--root-owner-group', archive_name])
+            ['dpkg-deb', '--build', '--root-owner-group', archive_name], check=True)
         shutil.rmtree(archive_name)
 
 
