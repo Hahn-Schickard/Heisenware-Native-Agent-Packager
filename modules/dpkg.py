@@ -11,6 +11,9 @@ def make_clean_dir(dir_path: str):
     if path.is_dir():
         shutil.rmtree(dir_path)
 
+    # create each parent on it's own, to ensure correct dir permissions
+    # if we use path.mkdir(parents=True), the dir permissions will be
+    # set to 0777 instead of 0755 with no way of changing it later
     for parent in reversed(path.parents):
         if not parent.exists():
             parent.mkdir(mode=0o755)
