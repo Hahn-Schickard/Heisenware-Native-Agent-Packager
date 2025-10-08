@@ -155,7 +155,10 @@ class __Packager:
 
     def document(self):
         readme = self.package_dir.parent / 'README'
-        content = f'sudo dpkg -i {self.package_name}_{self.version}_{self.arch}'
+        content = 'Run the following command to install the package:\n' + \
+            f'  sudo dpkg -i {self.package_name}_{self.version}_{self.arch}.deb\n' + \
+            'If you need to uninstall the package, run the following:\n' + \
+            f'  sudo dpkg -P {self.package_name}\n'
         write_file_content(readme, content)
 
 
