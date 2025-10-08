@@ -1,5 +1,6 @@
 import shutil
 import subprocess
+import os
 from pathlib import Path
 from datetime import date
 
@@ -10,6 +11,7 @@ def make_clean_dir(path: Path):
     if path.is_dir():
         shutil.rmtree(path)
 
+    original_mask = os.umask(0o022)
     # create each parent on it's own, to ensure correct dir permissions
     # if we use path.mkdir(parents=True), the dir permissions will be
     # set to 0777 instead of 0755 with no way of changing it later
@@ -17,6 +19,7 @@ def make_clean_dir(path: Path):
         if not parent.exists():
             parent.mkdir(mode=0o755)
     path.mkdir(mode=0o755, exist_ok=True)
+    os.umask(original_mask)
 
 
 def read_file_content(path: Path):
