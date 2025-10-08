@@ -4,6 +4,8 @@ import sys
 import os
 from datetime import date
 
+MAX_SYNOPSIS_LEN = 80
+
 def __make_clean_dir(dir_path:str):
     if os.path.isdir(dir_path):
         shutil.rmtree(dir_path)
@@ -36,23 +38,23 @@ def __write_file_content(file_path:str, content: str):
 
 def __update_control(package_name:str, version:str, arch:str):
     control_file = os.path.join(os.getcwd(), 'DEBIAN', 'control')
-    control = __read_file_content(control_file)
+    content = __read_file_content(control_file)
 
-    control.replace(r'{NAME}', package_name)
-    control.replace(r'{VERSION}', version)
-    control.replace(r'{ARCH}', arch)
+    content.replace(r'{NAME}', package_name)
+    content.replace(r'{VERSION}', version)
+    content.replace(r'{ARCH}', arch)
 
     synopsis_file = os.path.join(os.getcwd(), '..', 'generic', 'synopsis')
     synopsis = __read_file_content(synopsis_file)
-    if len(synopsis) > 80:
+    if len(synopsis) > MAX_SYNOPSIS_LEN:
         raise RuntimeError('Package synopsis is too long')
-    control.replace(r'{SYNOPSIS}', synopsis)
+    content.replace(r'{SYNOPSIS}', synopsis)
 
     description_file = os.path.join(os.getcwd(), '..', 'generic', 'description')
     description = __read_file_content(description_file)
-    control.replace(r'{DESCRIPTION}', description)
+    content.replace(r'{DESCRIPTION}', description)
 
-    __write_file_content(control_file, control)
+    __write_file_content(control_file, content)
 
 def __update_copytright():
     copyright_file = os.path.join(os.getcwd(), 'DEBIAN', 'copyright')
