@@ -71,10 +71,20 @@ def __update_copytright():
 
 
 def __update_daemon(package_name:str, binary_name:str):
-    # rename daemon template to heisenware_{packag_name}.service
-    # set daemon Descrtiption from general/synopis + description files
-    # change {HEISENWARE_AGENT_BINARY} placeholder to {binary_name}
-    pass
+    daemon_template = os.path.join(os.getcwd(), 'DEBIAN', 'heisenware.service')
+    daemon_service = os.path.join(os.getcwd(), 'DEBIAN', f'heisenware-{package_name}.service')
+    os.rename(src=daemon_template, dst=daemon_service)
+    
+    content = __read_file_content(daemon_service)
+
+    synopsis_file = os.path.join(os.getcwd(), '..', 'generic', 'synopsis')
+    synopsis = __read_file_content(synopsis_file)
+    description_file = os.path.join(os.getcwd(), '..', 'generic', 'description')
+    description = __read_file_content(description_file)
+    full_description = synopsis + description
+    content.replace(r'{DESCRIPTION}', full_description)
+
+    content.replace(r'{HEISENWARE_AGENT_BINARY}', binary_name)
 
 def __update_scripts(package_name:str):
     # change {SERVICE_NAME} in preinst, postinst, prerm and postrm scripts to {package_name}
