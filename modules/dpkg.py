@@ -125,11 +125,14 @@ class __Packager:
         postrm_file = os.path.join(self.control_dir, 'postrm')
         update_script(postrm_file, self.package_name)
 
-    def build_dpkg(self):
-        # check if dpkg-deb exists $(dpkg-deb --version) == 0
-        # dpkg-deb --build ${PACKAGE_NAME}_${VERSION}
-        pass
-
+    def build(self):
+        dpkg_found = subprocess.run(['dpkg-deb', '--version'], capture_output=True)
+        if dpkg_found.returncode != 0:
+            raise FileNotFoundError('dpkg-deb not found')
+        
+        subprocess.run(['dpkg-deb', '--build', '--root-owner-group', f'{self.package_name}'])
+        shutil.rmtree(self.package_name)
+        
 
 def make(work_dir: str, name: str, binary_path: str, version: str, arch: str):
     arch = arch.replace('_Debian', '')
@@ -146,4 +149,4 @@ def make(work_dir: str, name: str, binary_path: str, version: str, arch: str):
     packager.update_copytright()
     packager.update_daemon()
     packager.update_scripts()
-    packager.build_dpkg()
+    packager.build()
