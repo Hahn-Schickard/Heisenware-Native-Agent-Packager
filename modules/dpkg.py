@@ -43,6 +43,7 @@ def update_script(script_file: Path, service_name: str):
 class __Packager:
     def __init__(self,
                  work_dir: Path,
+                 output_dir: Path,
                  name: str,
                  binary_path: Path,
                  version: str,
@@ -54,7 +55,7 @@ class __Packager:
         self.version = version
         self.arch = arch
         self.binary_name = Path(self.binary_path).name
-        self.package_dir = self.cwd / \
+        self.package_dir = self.cwd / output_dir / \
             f'{self.package_name}_{self.version}_{self.arch}'
         self.control_dir = self.package_dir / 'DEBIAN'
         self.synopsis_file = self.cwd / 'generic' / 'synopsis'
@@ -146,14 +147,23 @@ class __Packager:
 
         archive_name = f'{self.package_name}_{self.version}_{self.arch}'
         subprocess.run(
-            ['dpkg-deb', '--build', '--root-owner-group', archive_name], check=True)
-        shutil.rmtree(archive_name)
+            ['dpkg-deb', '--build', '--root-owner-group', archive_name],
+            cwd=self.package_dir.parent,
+            check=True
+        )
+        shutil.rmtree(self.package_dir)
+
+    def document(self):
+        readme = self.package_dir.parent / 'README'
+        content = f'sudo dpkg -i {self.package_name}_{self.version}_{self.arch}'
+        write_file_content(readme, content)
 
 
-def make(work_dir: Path, name: str, binary_path: Path, version: str, arch: str):
+def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version: str, arch: str):
     arch = arch.replace('_Debian', '')
     arch = arch.lower()
-    packager = __Packager(work_dir, name, binary_path, version, arch)
+    packager = __Packager(work_dir, output_dir, name,
+                          binary_path, version, arch)
     packager.setup_workplace()
 
     full_binary_path = work_dir / binary_path
@@ -166,3 +176,4 @@ def make(work_dir: Path, name: str, binary_path: Path, version: str, arch: str):
     packager.update_daemon()
     packager.update_scripts()
     packager.build()
+    packager.document()

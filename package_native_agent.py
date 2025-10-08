@@ -15,6 +15,13 @@ if __name__ == '__main__':
         required=True
     )
     parser.add_argument(
+        '--output_dir',
+        help='Path to the generated Heisenware native agent'
+        ' binary file',
+        type=str,
+        default=''
+    )
+    parser.add_argument(
         '--target_system',
         help='Target package platform and architechture',
         choices=[
@@ -52,4 +59,4 @@ if __name__ == '__main__':
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
     this_dir = Path(Path(__file__).absolute()).parent
 
-    dpkg.make(this_dir, package_name, args.input_file, args.version, args.target_system)
+    dpkg.make(this_dir, args.output_dir, package_name, args.input_file, args.version, args.target_system)
