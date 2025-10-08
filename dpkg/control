@@ -1,6 +1,6 @@
 Package: {NAME}
 Version: {VERSION}
-Section: non-free
+Section: net
 Priority: optional
 Architecture: {ARCH}
 Maintainer: Burkhard Heisen <burkhard.heisenware@heisenware.com>
