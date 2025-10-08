@@ -47,7 +47,9 @@ class __Packager:
         self.binary_path = binary_path
         self.version = version
         self.arch = arch
-        self.package_dir = os.path.join(self.cwd, self.package_name)
+        self.binary_name = os.path.basename(self.binary_path)
+        self.package_dir = os.path.join(
+            self.cwd, f'{self.package_name}_{self.version}_{self.arch}')
         self.control_dir = os.path.join(self.package_dir, 'DEBIAN')
         self.synopsis_file = os.path.join(self.cwd, 'generic', 'synopsis')
         self.description_file = os.path.join(
@@ -104,13 +106,17 @@ class __Packager:
 
         synopsis = read_file_content(self.synopsis_file)
         description = read_file_content(self.description_file)
-        full_description = synopsis + description
+        full_description = f'{synopsis} {description}'
         content = content.replace('{DESCRIPTION}', full_description)
-
-        binary_name = os.path.basename(self.binary_path)
-        content = content.replace('{HEISENWARE_AGENT_BINARY}', binary_name)
+        content = content.replace(
+            '{HEISENWARE_AGENT_BINARY}', self.binary_name)
 
         write_file_content(daemon_service, content)
+
+        daemon_install_dir = os.path.join(
+            self.package_dir, 'usr', 'lib', 'systemd', 'system')
+        make_clean_dir(daemon_install_dir)
+        shutil.move(src=daemon_service, dst=daemon_install_dir)
 
     def update_scripts(self):
         preinst_file = os.path.join(self.control_dir, 'preinst')
@@ -126,13 +132,16 @@ class __Packager:
         update_script(postrm_file, self.package_name)
 
     def build(self):
-        dpkg_found = subprocess.run(['dpkg-deb', '--version'], capture_output=True)
+        dpkg_found = subprocess.run(
+            ['dpkg-deb', '--version'], capture_output=True)
         if dpkg_found.returncode != 0:
             raise FileNotFoundError('dpkg-deb not found')
-        
-        subprocess.run(['dpkg-deb', '--build', '--root-owner-group', f'{self.package_name}'])
-        shutil.rmtree(self.package_name)
-        
+
+        archive_name = f'{self.package_name}_{self.version}_{self.arch}'
+        subprocess.run(
+            ['dpkg-deb', '--build', '--root-owner-group', archive_name])
+        shutil.rmtree(archive_name)
+
 
 def make(work_dir: str, name: str, binary_path: str, version: str, arch: str):
     arch = arch.replace('_Debian', '')
