@@ -1,6 +1,5 @@
 import shutil
 import subprocess
-# import os
 from pathlib import Path
 from datetime import date
 
@@ -12,12 +11,10 @@ def make_clean_dir(dir_path: str):
     if path.is_dir():
         shutil.rmtree(dir_path)
 
-    path.mkdir(parents=True, exist_ok=True)
-    path.chmod(0o755)
-
-    # for root, dirs, _ in os.walk(dir_path):
-    #     for directory in dirs:
-    #         os.chmod(os.path.join(root, directory), 0o755)
+    for parent in reversed(path.parents):
+        if not parent.exists():
+            parent.mkdir(mode=0o755)
+    path.mkdir(mode=0o755, exist_ok=True)
 
 
 def read_file_content(file_path: str):
@@ -91,7 +88,7 @@ class __Packager:
 
         write_file_content(control_file, content)
 
-    def update_copytright(self):
+    def update_copyright(self):
         copyright_file = self.control_dir / 'copyright'
         content = content = read_file_content(copyright_file)
 
@@ -152,7 +149,7 @@ class __Packager:
         shutil.rmtree(archive_name)
 
 
-def make(work_dir: str, name: str, binary_path: str, version: str, arch: str):
+def make(work_dir: Path, name: str, binary_path: str, version: str, arch: str):
     arch = arch.replace('_Debian', '')
     arch = arch.lower()
     packager = __Packager(work_dir, name, binary_path, version, arch)
@@ -164,7 +161,7 @@ def make(work_dir: str, name: str, binary_path: str, version: str, arch: str):
     shutil.copy(src=full_binary_path, dst=install_dir)
 
     packager.update_control()
-    packager.update_copytright()
+    packager.update_copyright()
     packager.update_daemon()
     packager.update_scripts()
     packager.build()
