@@ -6,10 +6,9 @@ from datetime import date
 MAX_SYNOPSIS_LEN = 80
 
 
-def make_clean_dir(dir_path: str):
-    path = Path(dir_path)
+def make_clean_dir(path: Path):
     if path.is_dir():
-        shutil.rmtree(dir_path)
+        shutil.rmtree(path)
 
     # create each parent on it's own, to ensure correct dir permissions
     # if we use path.mkdir(parents=True), the dir permissions will be
@@ -20,23 +19,22 @@ def make_clean_dir(dir_path: str):
     path.mkdir(mode=0o755, exist_ok=True)
 
 
-def read_file_content(file_path: str):
-    path = Path(file_path)
+def read_file_content(path: Path):
     if not path.exists():
-        raise FileNotFoundError(f'File {file_path} does not exist')
+        raise FileNotFoundError(f'File {path} does not exist')
 
-    with open(file=file_path, mode='r', encoding='utf-8') as file:
+    with open(file=path, mode='r', encoding='utf-8') as file:
         content = file.read()
 
     return content
 
 
-def write_file_content(file_path: str, content: str):
-    with open(file=file_path, mode='w', encoding='utf-8') as file:
+def write_file_content(path: Path, content: str):
+    with open(file=path, mode='w', encoding='utf-8') as file:
         file.write(content)
 
 
-def update_script(script_file: str, service_name: str):
+def update_script(script_file: Path, service_name: str):
     content = read_file_content(script_file)
     content = content.replace('{SERVICE_NAME}', service_name)
     write_file_content(script_file, content)
@@ -44,13 +42,13 @@ def update_script(script_file: str, service_name: str):
 
 class __Packager:
     def __init__(self,
-                 work_dir: str,
+                 work_dir: Path,
                  name: str,
-                 binary_path: str,
+                 binary_path: Path,
                  version: str,
                  arch: str
                  ):
-        self.cwd = Path(work_dir)
+        self.cwd = work_dir
         self.package_name = name
         self.binary_path = binary_path
         self.version = version
@@ -152,13 +150,13 @@ class __Packager:
         shutil.rmtree(archive_name)
 
 
-def make(work_dir: Path, name: str, binary_path: str, version: str, arch: str):
+def make(work_dir: Path, name: str, binary_path: Path, version: str, arch: str):
     arch = arch.replace('_Debian', '')
     arch = arch.lower()
     packager = __Packager(work_dir, name, binary_path, version, arch)
     packager.setup_workplace()
 
-    full_binary_path = Path(work_dir) / binary_path
+    full_binary_path = work_dir / binary_path
     install_dir = packager.package_dir / 'usr' / 'bin'
     make_clean_dir(install_dir)
     shutil.copy(src=full_binary_path, dst=install_dir)
