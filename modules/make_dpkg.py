@@ -86,9 +86,25 @@ def __update_daemon(package_name:str, binary_name:str):
 
     content.replace(r'{HEISENWARE_AGENT_BINARY}', binary_name)
 
+def __update_script(script_file:str, service_name:str):
+    content = __read_file_content(script_file)
+    content.replace(r'{SERVICE_NAME}', service_name)
+    __write_file_content(script_file, content)
+
 def __update_scripts(package_name:str):
-    # change {SERVICE_NAME} in preinst, postinst, prerm and postrm scripts to {package_name}
-    pass
+    service_name = f'heisenware-{package_name}'
+    
+    preinst_file = os.path.join(os.getcwd(), 'DEBIAN', 'preinst')
+    __update_script(preinst_file, service_name)
+
+    postinst_file = os.path.join(os.getcwd(), 'DEBIAN', 'postinst')
+    __update_script(postinst_file, service_name)
+
+    prerm_file = os.path.join(os.getcwd(), 'DEBIAN', 'prerm')
+    __update_script(prerm_file, service_name)
+
+    postrm_file = os.path.join(os.getcwd(), 'DEBIAN', 'postrm')
+    __update_script(postrm_file, service_name)
 
 def __build_dpkg():
     # check if dpkg-deb exists $(dpkg-deb --version) == 0
