@@ -16,9 +16,7 @@ def make_clean_dir(path: Path):
     for parent in reversed(path.parents):
         if not parent.exists():
             parent.mkdir(mode=0o755)
-            parent.chmod(0o755)
     path.mkdir(mode=0o755, exist_ok=True)
-    path.chmod(0o755)
 
 
 def read_file_content(path: Path):
