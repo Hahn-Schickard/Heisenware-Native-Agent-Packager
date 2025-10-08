@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import os
 import argparse
+from pathlib import Path
 import modules.dpkg as dpkg
 
 
@@ -50,6 +50,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
-    this_dir = os.path.dirname(os.path.abspath(__file__))
+    this_dir = Path(Path(__file__).absolute()).parent
 
     dpkg.make(this_dir, package_name, args.input_file, args.version, args.target_system)
