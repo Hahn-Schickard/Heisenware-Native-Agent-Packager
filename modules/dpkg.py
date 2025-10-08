@@ -174,6 +174,8 @@ def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version
     install_dir = packager.package_dir / 'usr' / 'bin'
     make_clean_dir(install_dir)
     shutil.copy(src=full_binary_path, dst=install_dir)
+    installed_binary = install_dir / binary_path.name
+    installed_binary.chmod(0o755)
 
     packager.update_control()
     packager.update_copyright()
