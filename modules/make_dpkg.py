@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import sys
 import os
+from datetime import date
 
 def __make_clean_dir(dir_path:str):
     if os.path.isdir(dir_path):
@@ -54,10 +55,18 @@ def __update_control(package_name:str, version:str, arch:str):
     __write_file_content(control_file, control)
 
 def __update_copytright():
-    # get current year
-    # update copyright year placeholders
-    # fill in commercial license text from general/LICENSE
-    pass 
+    copyright_file = os.path.join(os.getcwd(), 'DEBIAN', 'copyright')
+    content = __read_file_content(copyright_file)
+
+    this_year = date.today().year
+    content.replace(r'{YEAR}', this_year)
+
+    license_file = os.path.join(os.getcwd(), '..', 'generic', 'LICENSE')
+    license_text = __read_file_content(license_file)
+    content.replace(r'{LICENSE_TEXT}', license_text)
+
+    __write_file_content(copyright_file, content)
+
 
 def __update_daemon(package_name:str, binary_name:str):
     # rename daemon template to heisenware_{packag_name}.service
