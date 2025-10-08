@@ -7,7 +7,7 @@ Type=exec
 ExecStart=/usr/bin/{HEISENWARE_AGENT_BINARY}
 StandardOutput=journal
 StandardError=journal
-RestartSec=1
+RestartSec=5
 Restart=on-failure
 
 [Install]
