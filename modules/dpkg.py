@@ -6,7 +6,7 @@ from datetime import date
 MAX_SYNOPSIS_LEN = 80
 
 
-def make_clean_dir(path: Path):
+def make_clean_dir(path: Path, mode=0o755):
     if path.is_dir():
         shutil.rmtree(path)
 
@@ -15,8 +15,8 @@ def make_clean_dir(path: Path):
     # set to 0777 instead of 0755 with no way of changing it later
     for parent in reversed(path.parents):
         if not parent.exists():
-            parent.mkdir(mode=0o755)
-    path.mkdir(mode=0o755, exist_ok=True)
+            parent.mkdir(mode)
+    path.mkdir(mode)
 
 
 def read_file_content(path: Path):
@@ -29,15 +29,15 @@ def read_file_content(path: Path):
     return content
 
 
-def write_file_content(path: Path, content: str):
+def write_file_content(path: Path, content: str, mode=0o744):
     with open(file=path, mode='w', encoding='utf-8') as file:
         file.write(content)
-
+    path.chmod(mode)
 
 def update_script(script_file: Path, service_name: str):
     content = read_file_content(script_file)
     content = content.replace('{SERVICE_NAME}', service_name)
-    write_file_content(script_file, content)
+    write_file_content(script_file, content, mode=0o755)
 
 
 class __Packager:
@@ -101,7 +101,7 @@ class __Packager:
         license_text = read_file_content(self.license_file)
         content = content.replace('{LICENSE_TEXT}', license_text)
 
-        write_file_content(copyright_file, content)
+        write_file_content(copyright_file, content, mode=0o644)
         copyright_install_dir = self.package_dir / \
             'usr' / 'share' / 'doc' / self.package_name
         make_clean_dir(copyright_install_dir)
@@ -121,7 +121,7 @@ class __Packager:
         content = content.replace(
             '{HEISENWARE_AGENT_BINARY}', self.binary_name)
 
-        write_file_content(daemon_service, content)
+        write_file_content(daemon_service, content, mode=0o644)
 
         daemon_install_dir = self.package_dir / 'usr' / 'lib' / 'systemd' / 'system'
         make_clean_dir(daemon_install_dir)
