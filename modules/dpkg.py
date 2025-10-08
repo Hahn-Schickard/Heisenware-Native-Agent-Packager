@@ -95,6 +95,10 @@ class __Packager:
         content = content.replace('{LICENSE_TEXT}', license_text)
 
         write_file_content(copyright_file, content)
+        copyright_install_dir = os.path.join(
+            self.package_dir, 'usr', 'share', 'doc', self.package_name)
+        make_clean_dir(copyright_install_dir)
+        shutil.move(src=copyright_file, dst=copyright_install_dir)
 
     def update_daemon(self):
         daemon_template = os.path.join(self.control_dir, 'daemon.service')
