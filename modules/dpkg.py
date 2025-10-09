@@ -84,12 +84,34 @@ class __DpkgPackager(utils.Packager):
         content = content.replace('{DESCRIPTION}', full_description)
         content = content.replace(
             '{HEISENWARE_AGENT_BINARY}', self.binary_name)
+        content = content.replace(
+            '{NAME}', self.package_name)
 
         utils.write_file_content(daemon_service, content, mode=0o644)
 
         daemon_install_dir = self.package_dir / 'usr' / 'lib' / 'systemd' / 'system'
         utils.make_clean_dir(daemon_install_dir)
         shutil.move(src=daemon_service, dst=daemon_install_dir)
+
+    def update_conffiles(self):
+        config_file = self.control_dir / 'conffiles'
+        content = utils.read_file_content(config_file)
+        content = content.replace(
+            '{NAME}', self.package_name)
+        utils.write_file_content(config_file, content, mode=0o644)
+
+    def add_logrotate(self):
+        config_file = self.control_dir / 'logrotate.conf'
+
+        content = utils.read_file_content(config_file)
+        content = content.replace(
+            '{NAME}', self.package_name)
+        utils.write_file_content(config_file, content, mode=0o644)
+
+        config_file = config_file.rename(self.control_dir / f'{self.package_name}.conf')
+        config_install_dir = self.package_dir / 'etc' / 'logrotate.d'
+        utils.make_clean_dir(config_install_dir)
+        shutil.move(src=config_file, dst=config_install_dir)
 
     def update_scripts(self):
         preinst_file = self.control_dir / 'preinst'
@@ -139,6 +161,8 @@ def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version
     installed_binary = install_dir / binary_path.name
     installed_binary.chmod(0o755)
 
+    packager.update_conffiles()
+    packager.add_logrotate()
     packager.update_control()
     packager.update_copyright()
     packager.update_daemon()
