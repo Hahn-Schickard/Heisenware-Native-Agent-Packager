@@ -1,3 +1,0 @@
-[submodule "thirdparty/logrotee"]
-	path = thirdparty/logrotee
-	url = https://github.com/singalen/logrotee.git
