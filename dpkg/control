@@ -3,6 +3,7 @@ Version: {VERSION}
 Section: net
 Priority: optional
 Architecture: {ARCH}
+Depends: logrotate
 Maintainer: Burkhard Heisen <burkhard.heisenware@heisenware.com>
 Description: {SYNOPSIS}
  {DESCRIPTION}
