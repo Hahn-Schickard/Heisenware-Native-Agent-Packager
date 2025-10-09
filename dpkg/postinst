@@ -3,6 +3,12 @@ set -e
 
 case "$1" in
     configure)
+        if [ ! -d "/var/log/heisenware" ];
+        then
+            echo "postinst creating /var/log/heisenware directory"
+            mkdir -p /var/log/heisenware
+        fi
+
         if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
         then
             echo "postinst updating {SERVICE_NAME} unit"
