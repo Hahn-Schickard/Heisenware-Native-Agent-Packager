@@ -12,7 +12,7 @@
             "console": "integratedTerminal",
             "purpose": ["debug-in-terminal"],
             "args": [
-                "--input_file", "tests/edge-connect-qcrf5-hahn-schickard-default",
+                "--input_file", "tests/linux_test",
                 "--output_dir", "output",
                 "--target_system", "Amd64_Debian",
                 "--agent_id", "qcrf5",
@@ -29,7 +29,7 @@
             "program": "package_native_agent.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file", "tests/edge-connect-qcrf5-hahn-schickard-default",
+                "--input_file", "tests/linux_test",
                 "--output_dir", "output",
                 "--target_system", "Amd64_Debian",
                 "--agent_id", "qcrf5",
