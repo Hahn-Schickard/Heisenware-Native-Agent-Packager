@@ -3,7 +3,14 @@ set -e
 
 case "$1" in
     install|upgrade)
-        if systemctl is-active --quiet '{SERVICE_NAME}.service'; then
+        if ! command -v logrotate > /dev/null 2>&1; 
+        then
+            echo "Error: logrotate is not installed."
+            exit 1
+        fi
+
+        if systemctl is-active --quiet '{SERVICE_NAME}.service'; 
+        then
             echo "preinst stopping {SERVICE_NAME} unit"
             deb-systemd-invoke stop '{SERVICE_NAME}.service'
         fi
