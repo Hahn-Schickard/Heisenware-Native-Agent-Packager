@@ -33,3 +33,24 @@ def update_script(script_file: Path, service_name: str):
     content = read_file_content(script_file)
     content = content.replace('{SERVICE_NAME}', service_name)
     write_file_content(script_file, content, mode=0o755)
+
+class Packager:
+    def __init__(self,
+                 work_dir: Path,
+                 output_dir: Path,
+                 name: str,
+                 binary_path: Path,
+                 version: str,
+                 arch: str
+                 ):
+        self.cwd = work_dir
+        self.package_name = name
+        self.binary_path = binary_path
+        self.version = version
+        self.arch = arch
+        self.binary_name = Path(self.binary_path).name
+        self.package_dir = self.cwd / output_dir / \
+            f'{self.package_name}_{self.version}_{self.arch}'
+        self.synopsis_file = self.cwd / 'generic' / 'synopsis'
+        self.description_file = self.cwd / 'generic' / 'description'
+        self.license_file = self.cwd / 'generic' / 'LICENSE'

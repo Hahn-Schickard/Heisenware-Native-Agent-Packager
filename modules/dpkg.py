@@ -6,7 +6,8 @@ import modules.utils as utils
 
 MAX_SYNOPSIS_LEN = 80
 
-class __Packager:
+
+class __DpkgPackager(utils.Packager):
     def __init__(self,
                  work_dir: Path,
                  output_dir: Path,
@@ -15,18 +16,15 @@ class __Packager:
                  version: str,
                  arch: str
                  ):
-        self.cwd = work_dir
-        self.package_name = name
-        self.binary_path = binary_path
-        self.version = version
-        self.arch = arch
-        self.binary_name = Path(self.binary_path).name
-        self.package_dir = self.cwd / output_dir / \
-            f'{self.package_name}_{self.version}_{self.arch}'
+        utils.Packager.__init__(
+            self,
+            work_dir,
+            output_dir,
+            name,
+            binary_path,
+            version, arch
+        )
         self.control_dir = self.package_dir / 'DEBIAN'
-        self.synopsis_file = self.cwd / 'generic' / 'synopsis'
-        self.description_file = self.cwd / 'generic' / 'description'
-        self.license_file = self.cwd / 'generic' / 'LICENSE'
 
     def setup_workplace(self):
         template_dir = self.cwd / 'dpkg'
@@ -132,8 +130,8 @@ class __Packager:
 def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version: str, arch: str):
     arch = arch.replace('_Debian', '')
     arch = arch.lower()
-    packager = __Packager(work_dir, output_dir, name,
-                          binary_path, version, arch)
+    packager = __DpkgPackager(work_dir, output_dir, name,
+                              binary_path, version, arch)
     packager.setup_workplace()
 
     full_binary_path = work_dir / binary_path
