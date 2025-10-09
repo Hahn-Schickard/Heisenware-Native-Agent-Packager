@@ -11,7 +11,7 @@ This project provides utility tools to create various packages and installers fo
 To install all of the above mentioned requirements, please use the following commands:
 
 ```bash
-sudo apt install dpkg nsis python unzip -y
+sudo apt install dpkg nsis python3 unzip -y
 wget -O NSIS_Simple_Service.zip https://nsis.sourceforge.io/mediawiki/images/e/ef/NSIS_Simple_Service_Plugin_Unicode_1.30.zip
 wget -O NSIS_Access_Control.zip https://nsis.sourceforge.io/mediawiki/images/4/4a/AccessControl.zip
 unzip -d nsis_service NSIS_Simple_Service.zip && rm NSIS_Simple_Service.zip
