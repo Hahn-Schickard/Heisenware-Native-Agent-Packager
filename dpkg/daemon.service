@@ -4,9 +4,8 @@ After=multi-user.target
 
 [Service]
 Type=exec
-ExecStart=/usr/bin/{HEISENWARE_AGENT_BINARY}
-StandardOutput=journal
-StandardError=journal
+ExecStart=/bin/sh -c \
+ '/usr/bin/{HEISENWARE_AGENT_BINARY} 2>&1 | tee -a /var/log/heisenware/{NAME}.log'
 RestartSec=5
 Restart=on-failure
 
