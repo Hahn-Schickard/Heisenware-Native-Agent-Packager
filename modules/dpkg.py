@@ -128,8 +128,6 @@ class __DpkgPackager(utils.Packager):
 
 
 def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version: str, arch: str):
-    arch = arch.replace('_Debian', '')
-    arch = arch.lower()
     packager = __DpkgPackager(work_dir, output_dir, name,
                               binary_path, version, arch)
     packager.setup_workplace()

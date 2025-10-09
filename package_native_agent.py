@@ -3,9 +3,9 @@
 import argparse
 from pathlib import Path
 import modules.dpkg as dpkg
+import modules.nsis as nsis
 
-
-if __name__ == '__main__':
+def make_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         '--input_file',
@@ -26,7 +26,8 @@ if __name__ == '__main__':
         help='Target package platform and architechture',
         choices=[
             'Amd64_Debian',
-            'Arm64_Debian'
+            'Arm64_Debian',
+            'Amd64_Windows'
         ],
         required=True
     )
@@ -54,9 +55,30 @@ if __name__ == '__main__':
         type=str,
         required=True
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
+if __name__ == '__main__':
+    args = make_args()
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
     this_dir = Path(Path(__file__).absolute()).parent
+    input_file = Path(args.input_file)
 
-    dpkg.make(this_dir, args.output_dir, package_name, Path(args.input_file), args.version, args.target_system)
+    if args.target_system.endswith('_Debian'):
+        arch = args.target_system
+        arch = arch.replace('_Debian', '')
+        arch = arch.lower()
+        dpkg.make(this_dir,
+                  args.output_dir,
+                  package_name,
+                  input_file,
+                  args.version,
+                  arch
+                  )
+    elif args.target_system.endswith('_Windows'):
+        nsis.make(this_dir,
+                  args.output_dir,
+                  package_name,
+                  input_file,
+                  args.version,
+                  args.target_system
+                  )
