@@ -29,7 +29,7 @@
             "program": "package_native_agent.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file", "tests/windows_test",
+                "--input_file", "tests/windows_test.exe",
                 "--output_dir", "output",
                 "--target_system", "Amd64_Windows",
                 "--agent_id", "qcrf5",

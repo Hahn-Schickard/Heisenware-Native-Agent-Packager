@@ -37,6 +37,15 @@ class __DpkgPackager(utils.Packager):
                         dirs_exist_ok=True)
         self.control_dir.chmod(0o755)
 
+    def add_binary(self, binary: Path):
+        install_dir = self.package_dir / 'usr' / 'bin'
+        utils.make_clean_dir(install_dir)
+
+        binary_path = self.cwd / binary
+        shutil.copy(src=binary_path, dst=install_dir)
+        installed_binary = install_dir / binary.name
+        installed_binary.chmod(0o755)
+
     def update_control(self):
         control_file = self.control_dir / 'control'
         content = utils.read_file_content(control_file)
@@ -158,14 +167,7 @@ def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version
     packager = __DpkgPackager(work_dir, output_dir, name,
                               binary_path, version, arch)
     packager.setup_workplace()
-
-    full_binary_path = work_dir / binary_path
-    install_dir = packager.package_dir / 'usr' / 'bin'
-    utils.make_clean_dir(install_dir)
-    shutil.copy(src=full_binary_path, dst=install_dir)
-    installed_binary = install_dir / binary_path.name
-    installed_binary.chmod(0o755)
-
+    packager.add_binary(binary_path)
     packager.update_conffiles()
     packager.add_logrotate()
     packager.update_control()
