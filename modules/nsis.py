@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 import modules.utils as utils
 
+
 class __NsisPackager(utils.Packager):
     def __init__(self,
                  work_dir: Path,
@@ -65,10 +66,10 @@ class __NsisPackager(utils.Packager):
             '{HEISENWARE_AGENT_BINARY}', self.binary_name)
 
         utils.write_file_content(installer_file, content)
-        
+
     def build(self):
         nsis_found = subprocess.run(
-            ['makensis','-VERSION'], capture_output=True, check=False)
+            ['makensis', '-VERSION'], capture_output=True, check=False)
         if nsis_found.returncode != 0:
             raise FileNotFoundError('makensis not found')
 
@@ -78,6 +79,7 @@ class __NsisPackager(utils.Packager):
             check=True
         )
         shutil.rmtree(self.installer_dir)
+
 
 def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version: str, arch: str):
     packager = __NsisPackager(work_dir, output_dir, name,
