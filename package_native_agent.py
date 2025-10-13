@@ -91,6 +91,7 @@ if __name__ == '__main__':
                     ' but it does not exists', file=sys.stderr)
                 sys.exit(1)
 
+            arch = arch.replace('_windows', '')
             nsis.make(this_dir,
                     args.output_dir,
                     package_name,
