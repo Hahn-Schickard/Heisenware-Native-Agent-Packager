@@ -43,3 +43,12 @@ Example usage:
 ```bash
 ./package_native_agent.py --input_file input_binary --target_system Amd64_Debian --agent_id abcd --account_name Test --workspace_name Default --version 00-1
 ```
+
+## Project structure
+
+* `.vscode` - shared VSCode configuration files
+* `generic` - static files that are used by all packages/installers during creation 
+* `dpkg` - static and template files that are required for `.deb` package creation
+* `nsis` - template files that are required by NSIS for Windows installer wizard creation
+* `modules` - internal Python modules that are responsible for chosen package/installer creation
+* `tests` - stores test inputs for `package_native_agent.py`, only used during development
