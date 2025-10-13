@@ -6,7 +6,6 @@ This project provides utility tools to create various packages and installers fo
  * [dpkg](https://tracker.debian.org/pkg/dpkg) - used to build .deb packages (not necessary, if you don't plan to build dpkg packages)
  * [NSIS](https://nsis.sourceforge.io/Main_Page) - Nullsoft Scriptable Install System, used to create windows installer wizard (not necessary, if you don't plan to build windows installers)
     * [NSIS Simple Service Plugin](https://nsis.sourceforge.io/NSIS_Simple_Service_Plugin) - use to generate windows service installation scripts
-    * [AccessControl plug-in](https://nsis.sourceforge.io/AccessControl_plug-in) - use to modify installed directory permissions
 
 To install all of the above mentioned requirements, please use the following commands:
 
