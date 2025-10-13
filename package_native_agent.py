@@ -63,10 +63,11 @@ if __name__ == '__main__':
     this_dir = Path(Path(__file__).absolute()).parent
     input_file = Path(args.input_file)
 
-    if args.target_system.endswith('_Debian'):
-        arch = args.target_system
-        arch = arch.replace('_Debian', '')
-        arch = arch.lower()
+    arch = args.target_system
+    arch = arch.lower()
+
+    if arch.endswith('_debian'):
+        arch = arch.replace('_debian', '')
         dpkg.make(this_dir,
                   args.output_dir,
                   package_name,
@@ -74,11 +75,11 @@ if __name__ == '__main__':
                   args.version,
                   arch
                   )
-    elif args.target_system.endswith('_Windows'):
+    elif arch.endswith('_windows'):
         nsis.make(this_dir,
                   args.output_dir,
                   package_name,
                   input_file,
                   args.version,
-                  args.target_system
+                  arch
                   )
