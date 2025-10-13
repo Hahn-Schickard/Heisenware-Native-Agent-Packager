@@ -13,9 +13,6 @@ To install all of the above mentioned requirements, please use the following com
 ```bash
 sudo apt install dpkg nsis python3 unzip -y
 wget -O NSIS_Simple_Service.zip https://nsis.sourceforge.io/mediawiki/images/e/ef/NSIS_Simple_Service_Plugin_Unicode_1.30.zip
-wget -O NSIS_Access_Control.zip https://nsis.sourceforge.io/mediawiki/images/4/4a/AccessControl.zip
 unzip -d nsis_service NSIS_Simple_Service.zip && rm NSIS_Simple_Service.zip
-unzip -d nsis_access_control NSIS_Access_Control.zip && rm NSIS_Access_Control.zip
-sudo mv nsis_service/*.dll /usr/share/nsis/Plugins/ && rm -rf nsis_service
-sudo mv nsis_access_control/Plugins/amd64-unicode/AccessControl.dll /usr/share/nsis/Plugins/x86-unicode && rm -rf nsis_access_control
+sudo mv nsis_service/SimpleSC.dll /usr/share/nsis/Plugins/amd64-unicode/ && rm -rf nsis_service
 ```
