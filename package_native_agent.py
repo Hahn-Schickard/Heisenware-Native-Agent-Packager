@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+import sys
 from pathlib import Path
 import modules.dpkg as dpkg
 import modules.nsis as nsis
+
 
 def make_args():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -57,11 +59,16 @@ def make_args():
     )
     return parser.parse_args()
 
+
 if __name__ == '__main__':
     args = make_args()
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
     this_dir = Path(Path(__file__).absolute()).parent
+    
     input_file = Path(args.input_file)
+    if not input_file.is_file():
+        print(f'Given input file {input_file} does not exist', file=sys.stderr)
+        sys.exit(1)
 
     arch = args.target_system
     arch = arch.lower()
@@ -76,6 +83,12 @@ if __name__ == '__main__':
                   arch
                   )
     elif arch.endswith('_windows'):
+        openssl_dir = input_file.parent / 'openssl'
+        if not openssl_dir.is_dir():
+            print(f'Expected Openssl directory in {openssl_dir},'
+                  ' but it does not exists', file=sys.stderr)
+            sys.exit(1)
+
         nsis.make(this_dir,
                   args.output_dir,
                   package_name,
