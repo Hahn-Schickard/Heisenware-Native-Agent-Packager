@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import traceback
 from pathlib import Path
 import modules.dpkg as dpkg
 import modules.nsis as nsis
@@ -73,26 +74,30 @@ if __name__ == '__main__':
     arch = args.target_system
     arch = arch.lower()
 
-    if arch.endswith('_debian'):
-        arch = arch.replace('_debian', '')
-        dpkg.make(this_dir,
-                  args.output_dir,
-                  package_name,
-                  input_file,
-                  args.version,
-                  arch
-                  )
-    elif arch.endswith('_windows'):
-        openssl_dir = input_file.parent / 'openssl'
-        if not openssl_dir.is_dir():
-            print(f'Expected Openssl directory in {openssl_dir},'
-                  ' but it does not exists', file=sys.stderr)
-            sys.exit(1)
+    try:
+        if arch.endswith('_debian'):
+            arch = arch.replace('_debian', '')
+            dpkg.make(this_dir,
+                    args.output_dir,
+                    package_name,
+                    input_file,
+                    args.version,
+                    arch
+                    )
+        elif arch.endswith('_windows'):
+            openssl_dir = input_file.parent / 'openssl'
+            if not openssl_dir.is_dir():
+                print(f'Expected Openssl directory in {openssl_dir},'
+                    ' but it does not exists', file=sys.stderr)
+                sys.exit(1)
 
-        nsis.make(this_dir,
-                  args.output_dir,
-                  package_name,
-                  input_file,
-                  args.version,
-                  arch
-                  )
+            nsis.make(this_dir,
+                    args.output_dir,
+                    package_name,
+                    input_file,
+                    args.version,
+                    arch
+                    )
+    except Exception:
+        print(traceback.format_exc(), file=sys.stderr)
+        sys.exit(1)
