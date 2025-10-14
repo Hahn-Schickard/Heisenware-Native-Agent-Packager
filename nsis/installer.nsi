@@ -18,7 +18,6 @@ RequestExecutionLevel admin
 !insertmacro MUI_LANGUAGE "English"
 
 Var PrevVersion
-Var PrevInstallDir
 
 Page Directory DirectoryHeader
 Page InstFiles InstallHeader
@@ -127,11 +126,12 @@ FunctionEnd
 !macro RemoveInstalled un
   Function ${un}RemoveInstalled
     Call ${un}RemoveService
-    ReadRegStr $PrevInstallDir HKLM "${UNINSTALL_REG_KEY}" "InstallLocation"
     DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-    RmDir /r ${PrevInstallDir}
-    Delete ${PrevInstallDir}\uninstaller.exe
-    RmDir ${PrevInstallDir}
+    DetailPrint "Removed ${UNINSTALL_REG_KEY} WinRegKey"
+    RmDir /r "$INSTDIR"
+    Delete $INSTDIR\uninstaller.exe
+    RmDir $INSTDIR
+    DetailPrint "Removed $INSTDIR directory and it's content"
   FunctionEnd
 !macroend
 
