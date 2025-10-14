@@ -18,6 +18,7 @@ RequestExecutionLevel admin
 !insertmacro MUI_LANGUAGE "English"
 
 Var PrevVersion
+Var PrevInstallDir
 
 Page Directory DirectoryHeader
 Page InstFiles InstallHeader
@@ -56,49 +57,32 @@ Function SetRegistryKeys
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "UninstallString" "$INSTDIR\uninstall.exe"
 FunctionEnd
 
-Function RemoveService
-  SimpleSC::ExistsService "${PROGRAM_NAME}Service"
-  Pop $0
-  ${If} $0 == "0"
-    SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
+!macro RemoveService un
+  Function ${un}RemoveService
+    SimpleSC::ExistsService "${PROGRAM_NAME}Service"
     Pop $0
-    Pop $1
     ${If} $0 == "0"
-      ${If} $1 == "1"
-        ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-          SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
-          DetailPrint "${PROGRAM_NAME}Service stopped"
-        ${Else}
-          Abort
+      SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
+      Pop $0
+      Pop $1
+      ${If} $0 == "0"
+        ${If} $1 == "1"
+          ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
+            SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
+            DetailPrint "${PROGRAM_NAME}Service stopped"
+          ${Else}
+            Abort
+          ${EndIf}
         ${EndIf}
       ${EndIf}
+      SimpleSC::RemoveService "${PROGRAM_NAME}Service"
+      DetailPrint "${PROGRAM_NAME}Service removed"
     ${EndIf}
-    SimpleSC::RemoveService "${PROGRAM_NAME}Service"
-    DetailPrint "${PROGRAM_NAME}Service removed"
-  ${EndIf}
-FunctionEnd
+  FunctionEnd
+!macroend
 
-Function un.RemoveService
-  SimpleSC::ExistsService "${PROGRAM_NAME}Service"
-  Pop $0
-  ${If} $0 == "0"
-    SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
-    Pop $0
-    Pop $1
-    ${If} $0 == "0"
-      ${If} $1 == "1"
-        ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-          SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
-          DetailPrint "${PROGRAM_NAME}Service stopped"
-        ${Else}
-          Abort
-        ${EndIf}
-      ${EndIf}
-    ${EndIf}
-    SimpleSC::RemoveService "${PROGRAM_NAME}Service"
-    DetailPrint "${PROGRAM_NAME}Service removed"
-  ${EndIf}
-FunctionEnd
+!insertmacro RemoveService "" 
+!insertmacro RemoveService "un."
 
 Function InstallService
   Call RemoveService
@@ -140,6 +124,20 @@ Function InstallService
   ${EndIf}
 FunctionEnd
 
+!macro RemoveInstalled un
+  Function ${un}RemoveInstalled
+    Call ${un}RemoveService
+    ReadRegStr $PrevInstallDir HKLM "${UNINSTALL_REG_KEY}" "InstallLocation"
+    DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
+    RmDir /r ${PrevInstallDir}
+    Delete ${PrevInstallDir}\uninstaller.exe
+    RmDir ${PrevInstallDir}
+  FunctionEnd
+!macroend
+
+!insertmacro RemoveInstalled "" 
+!insertmacro RemoveInstalled "un."
+
 Function CleanInstall
   ${If} ${FileExists} "$INSTDIR\openssl"
     ${If} ${Cmd} `MessageBox MB_OKCANCEL "$INSTDIR\openssl already exists. Delete it?" IDOK`
@@ -158,25 +156,9 @@ Function CleanInstall
   Call SetRegistryKeys
 FunctionEnd
 
-Function RemoveInstalled
-  Call RemoveService
-  DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-  RmDir /r "$INSTDIR"
-  Delete $INSTDIR\uninstaller.exe
-  RmDir $INSTDIR
-FunctionEnd
-
 Function UpdateInstalled
   Call RemoveInstalled
   Call CleanInstall
-FunctionEnd
-
-Function un.RemoveInstalled
-  Call un.RemoveService
-  DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-  RmDir /r "$INSTDIR"
-  Delete $INSTDIR\uninstaller.exe
-  RmDir $INSTDIR
 FunctionEnd
 
 Section "Directory"
