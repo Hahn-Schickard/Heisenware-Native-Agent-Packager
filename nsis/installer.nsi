@@ -97,14 +97,41 @@ FunctionEnd
 
 Function InstallService
   Call RemoveService
-  SimpleSC::InstallService "${PROGRAM_NAME}Service" "{SYNOPSIS} {DESCRIPTION}" "16" "2" "$INSTDIR\{HEISENWARE_AGENT_BINARY}" "" "" ""
-  !insertmacro AbortOnError "Failed to install ${PROGRAM_NAME}Service due to error" "${PROGRAM_NAME}Service Installed"
+  SimpleSC::InstallService \
+    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
+    /*Service Display name*/ "{SYNOPSIS} {DESCRIPTION}" \
+    /*Service type, 16 = SERVICE_WIN32_OWN_PROCESS*/ "16" \
+    /*Service start type, 2 = SERVICE_AUTO_START*/ "2" \
+    /*Path to the service binary executable*/ "$INSTDIR\{HEISENWARE_AGENT_BINARY}" \
+    /*Service dependency list*/ "" \
+    /*Executing account name, empty = system account*/ "" \
+    /*Executing account password, empty = system account*/ ""
+  !insertmacro AbortOnError \
+    "Failed to install ${PROGRAM_NAME}Service due to error" \
+    "${PROGRAM_NAME}Service Installed"
 
-  SimpleSC::SetServiceFailure "${PROGRAM_NAME}Service" "0" "" "" "1" "60000" "2" "300000" "0" "0"
-  !insertmacro AbortOnError "Failed to set restart policy for ${PROGRAM_NAME}Service due to error" "${PROGRAM_NAME}Service restart policy configured"
+  SimpleSC::SetServiceFailure \
+    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
+    /*Reset period*/ "0" \
+    /*Reboot message*/ "Restarting ${PROGRAM_NAME}Service" \
+    /*Command*/"" \
+    /*First action*/"1" \
+    /*First action delay in ms*/"60000" \
+    /*Second action*/"2" \
+    /*Second action delay in ms*/"300000" \
+    /*Third action*/"0" \
+    /*Third action delay in ms*/"0"
+  !insertmacro AbortOnError \
+    "Failed to set restart policy for ${PROGRAM_NAME}Service due to error" \
+    "${PROGRAM_NAME}Service restart policy configured"
   
-  SimpleSC::StartService "${PROGRAM_NAME}Service" "" 60
-  !insertmacro AbortOnError "Could not start ${PROGRAM_NAME}Service due to error" "${PROGRAM_NAME}Service started"
+  SimpleSC::StartService \
+    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
+    /*Service input args*/ "" \
+    /*Service start timeout in s*/ 60
+  !insertmacro AbortOnError \
+    "Could not start ${PROGRAM_NAME}Service due to error" \
+    "${PROGRAM_NAME}Service started"
 FunctionEnd
 
 !macro makeRemoveInstalled un
