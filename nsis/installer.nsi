@@ -56,7 +56,7 @@ Function SetRegistryKeys
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "UninstallString" "$INSTDIR\uninstaller.exe"
 FunctionEnd
 
-!macro RemoveService un
+!macro makeRemoveService un
   Function ${un}RemoveService
     SimpleSC::ExistsService "${PROGRAM_NAME}Service"
     Pop $0
@@ -64,14 +64,12 @@ FunctionEnd
       SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
       Pop $0
       Pop $1
-      ${If} $0 == "0"
-        ${If} $1 == "1"
-          ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-            SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
-            DetailPrint "${PROGRAM_NAME}Service stopped"
-          ${Else}
-            Abort
-          ${EndIf}
+      ${If} "$0$1" == "01"
+        ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
+          SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
+          DetailPrint "${PROGRAM_NAME}Service stopped"
+        ${Else}
+          Abort "Keeping old files and aborting installation"
         ${EndIf}
       ${EndIf}
       SimpleSC::RemoveService "${PROGRAM_NAME}Service"
@@ -80,50 +78,36 @@ FunctionEnd
   FunctionEnd
 !macroend
 
-!insertmacro RemoveService "" 
-!insertmacro RemoveService "un."
+!insertmacro makeRemoveService "" 
+!insertmacro makeRemoveService "un."
+
+!macro AbortOnError AbortMsg SuccessMsg
+  Pop $0
+  ${If} $0 != "0"
+    Push $0
+    SimpleSC::GetErrorMessage
+    Pop $0
+    ${If} ${Cmd} `MessageBox MB_OK "${AbortMsg}:\r$\n$0" IDOK`
+      Abort "${AbortMsg}: $0"
+    ${EndIf}
+  ${Else}
+    DetailPrint "${SuccessMsg}"
+  ${EndIf}
+!macroend
 
 Function InstallService
   Call RemoveService
   SimpleSC::InstallService "${PROGRAM_NAME}Service" "{SYNOPSIS} {DESCRIPTION}" "16" "2" "$INSTDIR\{HEISENWARE_AGENT_BINARY}" "" "" ""
-  Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "Failed to install ${PROGRAM_NAME}Service due to error $0" IDOK`
-      Abort "Failed to install ${PROGRAM_NAME}Service due to error $0"
-    ${EndIf}
-  ${Else}
-    DetailPrint "${PROGRAM_NAME}Service Installed"
-  ${EndIf}
+  !insertmacro AbortOnError "Failed to install ${PROGRAM_NAME}Service due to error" "${PROGRAM_NAME}Service Installed"
+
   SimpleSC::SetServiceFailure "${PROGRAM_NAME}Service" "0" "" "" "1" "60000" "2" "300000" "0" "0"
-  Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "Failed to set restart policy for ${PROGRAM_NAME}Service due to error $0" IDOK`
-      Abort "Failed to set restart policy for ${PROGRAM_NAME}Service due to error $0"
-    ${EndIf}
-  ${Else}
-    DetailPrint "${PROGRAM_NAME}Service restart policy configured"
-  ${EndIf}
+  !insertmacro AbortOnError "Failed to set restart policy for ${PROGRAM_NAME}Service due to error" "${PROGRAM_NAME}Service restart policy configured"
+  
   SimpleSC::StartService "${PROGRAM_NAME}Service" "" 60
-  Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "Could not start ${PROGRAM_NAME}Service due to error $0" IDOK`
-      Abort "Could not start ${PROGRAM_NAME}Service due to error $0"
-    ${EndIf}
-  ${Else}
-    DetailPrint "${PROGRAM_NAME}Service started"
-  ${EndIf}
+  !insertmacro AbortOnError "Could not start ${PROGRAM_NAME}Service due to error" "${PROGRAM_NAME}Service started"
 FunctionEnd
 
-!macro RemoveInstalled un
+!macro makeRemoveInstalled un
   Function ${un}RemoveInstalled
     Call ${un}RemoveService
     DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
@@ -135,8 +119,8 @@ FunctionEnd
   FunctionEnd
 !macroend
 
-!insertmacro RemoveInstalled "" 
-!insertmacro RemoveInstalled "un."
+!insertmacro makeRemoveInstalled "" 
+!insertmacro makeRemoveInstalled "un."
 
 Function CleanInstall
   ${If} ${FileExists} "$INSTDIR\openssl"
