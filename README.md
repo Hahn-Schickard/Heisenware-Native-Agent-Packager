@@ -1,12 +1,44 @@
 # Heisenware-Native-Agent-Packager
 This project provides utility tools to create various packages and installers for Heisenware Native Agents
 
+## Features
+ * Generates `.deb` packages with:
+    * Daemon service that:
+        * Starts automatically on system startup
+        * Restarts 5s after service failure
+        * Saves called service binary output in `journal`
+        * Saves called service binary output in `/var/log/heisenware/` directory as logfiles
+    * Logrotate configuration that:
+        * Limits maximum logfile size to 20 MB 
+        * Rotates the logs over 10 backup files once the size limit is reached
+    * Maintainer scripts that: 
+        * Checks if daemon service is already installed
+        * (Un)Install the daemon service
+        * Creates `/var/log/heisenware/` directory if it does not exist
+    * Support for **Amd64** and **Arm64** architectures
+ * Generates Windows installer wizards that:
+    * Checks if a previous installation exists
+    * Allows the user to select the install location
+    * Installs a windows service that:
+        * Starts automatically on system startup
+        * Restarts a minute after failure
+        * Restarts 5 minutes after the first restart attempt failure
+    * Creates an uninstaller that:
+        * Checks if a service is running and asks for user consent to stop it, before continuing
+        * Removes installed service
+        * Removes Windows registry values for the installation
+        * Removes installed files
+    * Defines Windows registry values for:
+        * Program install location
+        * Installed version
+        * Uninstaller location
+    * Supports **Amd64** architecture for installed binaries (generated installer uses **x86** architecture)
+
 ## Requirements
  * python >3.7 - used to execute package generation scripts
  * [dpkg](https://tracker.debian.org/pkg/dpkg) - used to build .deb packages (not necessary, if you don't plan to build dpkg packages)
  * [NSIS](https://nsis.sourceforge.io/Main_Page) - Nullsoft Scriptable Install System, used to create windows installer wizard (not necessary, if you don't plan to build windows installers)
     * [NSIS Simple Service Plugin](https://nsis.sourceforge.io/NSIS_Simple_Service_Plugin) - use to generate windows service installation scripts
-    * [AccessControl plug-in](https://nsis.sourceforge.io/AccessControl_plug-in) - use to modify installed directory permissions
 
 To install all of the above mentioned requirements, please use the following commands:
 

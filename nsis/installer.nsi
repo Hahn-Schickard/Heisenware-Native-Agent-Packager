@@ -50,95 +50,104 @@ Function .onInit
 FunctionEnd
 
 Function SetRegistryKeys
-    WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayName" "{SYNOPSIS}"
+    WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayName" "${PROGRAM_NAME}"
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion" "${PROGRAM_VERSION}"
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "InstallLocation" "$INSTDIR"
-    WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "UninstallString" "$INSTDIR\uninstall.exe"
+    WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "UninstallString" "$INSTDIR\uninstaller.exe"
 FunctionEnd
 
-Function RemoveService
-  SimpleSC::ExistsService "${PROGRAM_NAME}Service"
-  Pop $0
-  ${If} $0 == "0"
-    SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
+!macro makeRemoveService un
+  Function ${un}RemoveService
+    SimpleSC::ExistsService "${PROGRAM_NAME}Service"
     Pop $0
-    Pop $1
     ${If} $0 == "0"
-      ${If} $1 == "1"
+      SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
+      Pop $0
+      Pop $1
+      ${If} "$0$1" == "01"
         ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
           SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
           DetailPrint "${PROGRAM_NAME}Service stopped"
         ${Else}
-          Abort
+          Abort "Keeping old files and aborting installation"
         ${EndIf}
       ${EndIf}
+      SimpleSC::RemoveService "${PROGRAM_NAME}Service"
+      DetailPrint "${PROGRAM_NAME}Service removed"
     ${EndIf}
-    SimpleSC::RemoveService "${PROGRAM_NAME}Service"
-    DetailPrint "${PROGRAM_NAME}Service removed"
-  ${EndIf}
-FunctionEnd
+  FunctionEnd
+!macroend
 
-Function un.RemoveService
-  SimpleSC::ExistsService "${PROGRAM_NAME}Service"
+!insertmacro makeRemoveService "" 
+!insertmacro makeRemoveService "un."
+
+!macro AbortOnError AbortMsg SuccessMsg
   Pop $0
-  ${If} $0 == "0"
-    SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
+  ${If} $0 != "0"
+    Push $0
+    SimpleSC::GetErrorMessage
     Pop $0
-    Pop $1
-    ${If} $0 == "0"
-      ${If} $1 == "1"
-        ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-          SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
-          DetailPrint "${PROGRAM_NAME}Service stopped"
-        ${Else}
-          Abort
-        ${EndIf}
-      ${EndIf}
+    ${If} ${Cmd} `MessageBox MB_OK "${AbortMsg}:\r$\n$0" IDOK`
+      Abort "${AbortMsg}: $0"
     ${EndIf}
-    SimpleSC::RemoveService "${PROGRAM_NAME}Service"
-    DetailPrint "${PROGRAM_NAME}Service removed"
+  ${Else}
+    DetailPrint "${SuccessMsg}"
   ${EndIf}
-FunctionEnd
+!macroend
 
 Function InstallService
   Call RemoveService
-  SimpleSC::InstallService "${PROGRAM_NAME}Service" "{SYNOPSIS} {DESCRIPTION}" "16" "2" "$INSTDIR\{HEISENWARE_AGENT_BINARY}" "" "" ""
-  Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "Failed to install ${PROGRAM_NAME}Service due to error $0" IDOK`
-      Abort "Failed to install ${PROGRAM_NAME}Service due to error $0"
-    ${EndIf}
-  ${Else}
-    DetailPrint "${PROGRAM_NAME}Service Installed"
-  ${EndIf}
-  SimpleSC::SetServiceFailure "${PROGRAM_NAME}Service" "0" "" "" "1" "60000" "2" "300000" "0" "0"
-  Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "Failed to set restart policy for ${PROGRAM_NAME}Service due to error $0" IDOK`
-      Abort "Failed to set restart policy for ${PROGRAM_NAME}Service due to error $0"
-    ${EndIf}
-  ${Else}
-    DetailPrint "${PROGRAM_NAME}Service restart policy configured"
-  ${EndIf}
-  SimpleSC::StartService "${PROGRAM_NAME}Service" "" 60
-  Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "Could not start ${PROGRAM_NAME}Service due to error $0" IDOK`
-      Abort "Could not start ${PROGRAM_NAME}Service due to error $0"
-    ${EndIf}
-  ${Else}
-    DetailPrint "${PROGRAM_NAME}Service started"
-  ${EndIf}
+  SimpleSC::InstallService \
+    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
+    /*Service Display name*/ "{SYNOPSIS} {DESCRIPTION}" \
+    /*Service type, 16 = SERVICE_WIN32_OWN_PROCESS*/ "16" \
+    /*Service start type, 2 = SERVICE_AUTO_START*/ "2" \
+    /*Path to the service binary executable*/ "$INSTDIR\{HEISENWARE_AGENT_BINARY}" \
+    /*Service dependency list*/ "" \
+    /*Executing account name, empty = system account*/ "" \
+    /*Executing account password, empty = system account*/ ""
+  !insertmacro AbortOnError \
+    "Failed to install ${PROGRAM_NAME}Service due to error" \
+    "${PROGRAM_NAME}Service Installed"
+
+  SimpleSC::SetServiceFailure \
+    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
+    /*Reset period*/ "0" \
+    /*Reboot message*/ "Restarting ${PROGRAM_NAME}Service" \
+    /*Command*/"" \
+    /*First action*/"1" \
+    /*First action delay in ms*/"60000" \
+    /*Second action*/"2" \
+    /*Second action delay in ms*/"300000" \
+    /*Third action*/"0" \
+    /*Third action delay in ms*/"0"
+  !insertmacro AbortOnError \
+    "Failed to set restart policy for ${PROGRAM_NAME}Service due to error" \
+    "${PROGRAM_NAME}Service restart policy configured"
+  
+  SimpleSC::StartService \
+    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
+    /*Service input args*/ "" \
+    /*Service start timeout in s*/ 60
+  !insertmacro AbortOnError \
+    "Could not start ${PROGRAM_NAME}Service due to error" \
+    "${PROGRAM_NAME}Service started"
 FunctionEnd
+
+!macro makeRemoveInstalled un
+  Function ${un}RemoveInstalled
+    Call ${un}RemoveService
+    DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
+    DetailPrint "Removed ${UNINSTALL_REG_KEY} WinRegKey"
+    RmDir /r "$INSTDIR"
+    Delete $INSTDIR\uninstaller.exe
+    RmDir $INSTDIR
+    DetailPrint "Removed $INSTDIR directory and it's content"
+  FunctionEnd
+!macroend
+
+!insertmacro makeRemoveInstalled "" 
+!insertmacro makeRemoveInstalled "un."
 
 Function CleanInstall
   ${If} ${FileExists} "$INSTDIR\openssl"
@@ -158,25 +167,9 @@ Function CleanInstall
   Call SetRegistryKeys
 FunctionEnd
 
-Function RemoveInstalled
-  Call RemoveService
-  DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-  RmDir /r "$INSTDIR"
-  Delete $INSTDIR\uninstaller.exe
-  RmDir $INSTDIR
-FunctionEnd
-
 Function UpdateInstalled
   Call RemoveInstalled
   Call CleanInstall
-FunctionEnd
-
-Function un.RemoveInstalled
-  Call un.RemoveService
-  DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-  RmDir /r "$INSTDIR"
-  Delete $INSTDIR\uninstaller.exe
-  RmDir $INSTDIR
 FunctionEnd
 
 Section "Directory"

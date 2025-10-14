@@ -3,12 +3,16 @@ Source: https://heisenware.com
 Upstream-Name: Heisenware Native Agent
 Upstream-Contact: Heisenware Support <support@heisenware.com>
 
-Files: *
+Files: usr/bin/*
 Copyright: {YEAR}, Heisenware GmbH
 License: Commercial
- {LICENSE_TEXT}
+{LICENSE_TEXT}
 
-Files: debian/*
+Files: 
+ debian/*
+ etc/logrotate.d/*
+ lib/systemd/system/*
+ share/doc/*
 Copyright: {YEAR}, Heisenware GmbH
 License: Apache 2.0
  Licensed under the Apache License, Version 2.0 (the "License");
