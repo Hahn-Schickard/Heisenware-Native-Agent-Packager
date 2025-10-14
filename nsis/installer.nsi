@@ -50,7 +50,7 @@ Function .onInit
 FunctionEnd
 
 Function SetRegistryKeys
-    WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayName" "{SYNOPSIS}"
+    WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayName" "${PROGRAM_NAME}"
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion" "${PROGRAM_VERSION}"
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "InstallLocation" "$INSTDIR"
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "UninstallString" "$INSTDIR\uninstall.exe"
