@@ -63,4 +63,5 @@ systemctl daemon-reload
 %license LICENSE
 
 %changelog
-# no changes to log
+* {DATE} - {VERSION}-1
+- Generated the package

@@ -1,6 +1,7 @@
 import shutil
 import subprocess
 from pathlib import Path
+from datetime import date
 import modules.utils as utils
 
 
@@ -65,6 +66,8 @@ class __RpmPackager(utils.Packager):
             '{HEISENWARE_AGENT_BINARY}', self.binary_name)
         content = content.replace('{VERSION}', self.version)
         content = content.replace('{NAME}', self.package_name)
+        timestamp = date.today().strftime('%a %b %d %Y')
+        content = content.replace('{DATE}', timestamp)
 
         utils.write_file_content(self.spec_file, content, mode=0o644)
 
