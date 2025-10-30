@@ -16,6 +16,8 @@ This project provides utility tools to create various packages and installers fo
         * (Un)Install the daemon service
         * Creates `/var/log/heisenware/` directory if it does not exist
     * Support for **Amd64** and **Arm64** architectures
+ * Generated `.rpm` packages with: 
+    * Same features as `.deb` packages
  * Generates Windows installer wizards that:
     * Checks if a previous installation exists
     * Allows the user to select the install location
@@ -43,7 +45,7 @@ This project provides utility tools to create various packages and installers fo
 To install all of the above mentioned requirements, please use the following commands:
 
 ```bash
-sudo apt install dpkg nsis python3 unzip wget -y
+sudo apt install dpkg nsis python3 unzip wget rpm -y
 wget -O NSIS_Simple_Service.zip https://nsis.sourceforge.io/mediawiki/images/e/ef/NSIS_Simple_Service_Plugin_Unicode_1.30.zip
 unzip -d nsis_service NSIS_Simple_Service.zip && rm NSIS_Simple_Service.zip
 sudo mv nsis_service/SimpleSC.dll /usr/share/nsis/Plugins/x86-unicode/ && rm -rf nsis_service
@@ -81,6 +83,7 @@ Example usage:
 * `.vscode` - shared VSCode configuration files
 * `shared` - static files that are used by all packages/installers during creation 
 * `dpkg` - static and template files that are required for `.deb` package creation
+* `rpm` - static and template files that are required for `.rpm` package creation
 * `nsis` - template files that are required by NSIS for Windows installer wizard creation
 * `modules` - internal Python modules that are responsible for chosen package/installer creation
 * `tests` - stores test inputs for `package_native_agent.py`, only used during development

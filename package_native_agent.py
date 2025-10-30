@@ -5,6 +5,7 @@ import sys
 import traceback
 from pathlib import Path
 import modules.dpkg as dpkg
+import modules.rpm as rpm
 import modules.nsis as nsis
 
 
@@ -30,6 +31,8 @@ def make_args():
         choices=[
             'Amd64_Debian',
             'Arm64_Debian',
+            'Amd64_Fedora',
+            'Arm64_Fedora',
             'Amd64_Windows'
         ],
         required=True
@@ -78,6 +81,15 @@ if __name__ == '__main__':
         if arch.endswith('_debian'):
             arch = arch.replace('_debian', '')
             dpkg.make(this_dir,
+                    args.output_dir,
+                    package_name,
+                    input_file,
+                    args.version,
+                    arch
+                    )
+        elif arch.endswith('_fedora'):
+            arch = arch.replace('_fedora', '')
+            rpm.make(this_dir,
                     args.output_dir,
                     package_name,
                     input_file,

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Test: Linux",
+            "name": "Test: Amd64 Debian",
             "type": "debugpy",
             "request": "launch",
             "program": "package_native_agent.py",
@@ -15,6 +15,60 @@
                 "--input_file", "tests/linux_test",
                 "--output_dir", "output",
                 "--target_system", "Amd64_Debian",
+                "--agent_id", "qcrf5",
+                "--account_name", "hahn-schickard",
+                "--workspace_name", "default",
+                "--version", "00-1"
+            ],
+            "stopOnEntry": false
+        },
+        {
+            "name": "Test: Arm64 Debian",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "package_native_agent.py",
+            "console": "integratedTerminal",
+            "purpose": ["debug-in-terminal"],
+            "args": [
+                "--input_file", "tests/linux_test",
+                "--output_dir", "output",
+                "--target_system", "Arm64_Debian",
+                "--agent_id", "qcrf5",
+                "--account_name", "hahn-schickard",
+                "--workspace_name", "default",
+                "--version", "00-1"
+            ],
+            "stopOnEntry": false
+        },
+         {
+            "name": "Test: Amd64 Fedora",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "package_native_agent.py",
+            "console": "integratedTerminal",
+            "purpose": ["debug-in-terminal"],
+            "args": [
+                "--input_file", "tests/linux_test",
+                "--output_dir", "output",
+                "--target_system", "Amd64_Fedora",
+                "--agent_id", "qcrf5",
+                "--account_name", "hahn-schickard",
+                "--workspace_name", "default",
+                "--version", "00-1"
+            ],
+            "stopOnEntry": false
+        },
+        {
+            "name": "Test: Arm64 Fedora",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "package_native_agent.py",
+            "console": "integratedTerminal",
+            "purpose": ["debug-in-terminal"],
+            "args": [
+                "--input_file", "tests/linux_test",
+                "--output_dir", "output",
+                "--target_system", "Arm64_Fedora",
                 "--agent_id", "qcrf5",
                 "--account_name", "hahn-schickard",
                 "--workspace_name", "default",
