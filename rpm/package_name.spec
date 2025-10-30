@@ -60,7 +60,7 @@ systemctl daemon-reload
 %{_bindir}/{HEISENWARE_AGENT_BINARY}
 %{_unitdir}/{NAME}.service
 /etc/logrotate.d/{NAME}.conf
-%dir %attr(644, root, root) %{_logdir}
+%dir %attr(0755, root, root) %{_logdir}
 %license LICENSE
 
 %changelog
