@@ -73,8 +73,9 @@ class __NsisPackager(utils.Packager):
         if nsis_found.returncode != 0:
             raise FileNotFoundError('makensis not found')
 
+        nsis_file = self.installer_dir / 'installer.nsi'
         subprocess.run(
-            ['makensis', '-v2', f'{self.installer_dir / 'installer.nsi'}'],
+            ['makensis', '-v2', nsis_file],
             cwd=self.installer_dir,
             check=True
         )
