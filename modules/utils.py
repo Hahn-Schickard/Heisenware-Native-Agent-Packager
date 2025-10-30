@@ -51,6 +51,7 @@ class Packager:
         self.binary_name = Path(self.binary_path).name
         self.package_dir = self.cwd / output_dir / \
             f'{self.package_name}_{self.version}_{self.arch}'
-        self.synopsis_file = self.cwd / 'generic' / 'synopsis'
-        self.description_file = self.cwd / 'generic' / 'description'
-        self.license_file = self.cwd / 'generic' / 'LICENSE'
+        self.shared_dir = self.cwd / 'shared'
+        self.synopsis_file = self.shared_dir / 'general' / 'synopsis'
+        self.description_file = self.shared_dir / 'general' / 'description'
+        self.license_file = self.shared_dir / 'general' / 'LICENSE'
