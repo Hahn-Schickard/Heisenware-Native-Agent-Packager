@@ -35,6 +35,11 @@ class __DpkgPackager(utils.Packager):
 
         shutil.copytree(src=template_dir, dst=self.control_dir,
                         dirs_exist_ok=True)
+        
+        shared_linux_dir = self.shared_dir / 'linux'
+        shutil.copytree(src=shared_linux_dir, dst=self.control_dir,
+                        dirs_exist_ok=True)
+        
         self.control_dir.chmod(0o755)
 
     def add_binary(self, binary: Path):
