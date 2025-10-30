@@ -2,7 +2,7 @@ Name:       {NAME}
 Version:    {VERSION}
 Release:    1%{?dist}
 Summary:    {SYNOPSIS}
-License:    commercial
+License:    Commercial
 URL:        https://heisenware.com
 Group:      Networking
 BuildArch:  {ARCH}
