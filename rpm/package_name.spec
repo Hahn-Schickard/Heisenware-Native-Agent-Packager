@@ -5,7 +5,6 @@ Summary:    {SYNOPSIS}
 License:    Commercial
 URL:        https://heisenware.com
 Group:      Networking
-BuildArch:  {ARCH}
 Requires:   logrotate, systemd
 Packager:   Burkhard Heisen <burkhard.heisenware@heisenware.com>
 

@@ -23,6 +23,9 @@ class __RpmPackager(utils.Packager):
         )
         if self.arch == 'amd64':
             self.arch = 'x86_64'
+        elif self.arch == 'arm64':
+            self.arch = 'aarch64-linux'
+
         self.version = self.version.replace('-', '.')
         self.spec_file = self.package_dir / f'{self.package_name}.spec'
 
@@ -56,12 +59,12 @@ class __RpmPackager(utils.Packager):
         description = utils.read_file_content(self.description_file)
         content = content.replace('{SYNOPSIS}', synopsis)
         content = content.replace('{DESCRIPTION}', description)
-        content = content.replace('{OUTPUT_DIR}', str(self.package_dir.absolute()))
+        content = content.replace(
+            '{OUTPUT_DIR}', str(self.package_dir.absolute()))
         content = content.replace(
             '{HEISENWARE_AGENT_BINARY}', self.binary_name)
         content = content.replace('{VERSION}', self.version)
         content = content.replace('{NAME}', self.package_name)
-        content = content.replace('{ARCH}', self.arch)
 
         utils.write_file_content(self.spec_file, content, mode=0o644)
 
@@ -107,6 +110,7 @@ class __RpmPackager(utils.Packager):
 
         subprocess.run(
             ['rpmbuild',
+             f'--target={self.arch}',
              f'{self.spec_file}',
              '-bb',
              '--build-in-place',
@@ -115,6 +119,8 @@ class __RpmPackager(utils.Packager):
             cwd=self.package_dir,
             check=True
         )
+        #rpmbuild --target expects aarch64-linux, but builds with aarch64 postfix
+        self.arch = self.arch.replace('-linux','')
         rpm_package_name = f'{self.package_name}-{self.version}-1.{self.arch}.rpm'
         rmp_file = self.package_dir / self.arch / rpm_package_name
         shutil.move(src=rmp_file, dst=self.package_dir.parent)
