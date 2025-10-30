@@ -92,7 +92,7 @@ class __RpmPackager(utils.Packager):
         utils.write_file_content(config_file, content, mode=0o644)
 
         config_file = config_file.rename(
-            self.package_dir / f'{self.package_name}.conf')
+            self.package_dir / f'{self.package_name}')
 
     def add_license(self):
         license_file = self.package_dir / 'LICENSE'

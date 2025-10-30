@@ -30,7 +30,7 @@ mkdir -p %{buildroot}%{_logdir}
 
 install -m 0755 {HEISENWARE_AGENT_BINARY} %{buildroot}%{_bindir}/{HEISENWARE_AGENT_BINARY}
 install -m 0644 {NAME}.service %{buildroot}%{_unitdir}/{NAME}.service
-install -m 0644 {NAME}.conf %{buildroot}/etc/logrotate.d/{NAME}.conf
+install -m 0644 {NAME} %{buildroot}/etc/logrotate.d/{NAME}
 
 %pre
 if [ systemctl is-enabled {NAME}.service && 
@@ -59,7 +59,7 @@ systemctl daemon-reload
 %files
 %{_bindir}/{HEISENWARE_AGENT_BINARY}
 %{_unitdir}/{NAME}.service
-/etc/logrotate.d/{NAME}.conf
+%config(noreplace) /etc/logrotate.d/{NAME}
 %dir %attr(0755, root, root) %{_logdir}
 %license LICENSE
 
