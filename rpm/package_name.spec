@@ -6,6 +6,7 @@ License:    commercial
 URL:        https://heisenware.com
 BuildArch:  {ARCH}
 Requires:   logrotate, systemd
+Packager:   Burkhard Heisen <burkhard.heisenware@heisenware.com>
 
 %define _rpmdir {OUTPUT_DIR}
 %define _logdir /var/log/heisenware
