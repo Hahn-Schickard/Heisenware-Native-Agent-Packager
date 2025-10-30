@@ -6,7 +6,7 @@
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
 
 Name "{SYNOPSIS} Installer Wizard"
-OutFile "..\{NAME}_Installer.exe"
+OutFile "..\{NAME}_installer.exe"
 InstallDir "$ProgramFiles\${PROGRAM_NAME}"
 InstallDirRegKey HKLM "${UNINSTALL_REG_KEY}" InstallLocation
 RequestExecutionLevel admin
