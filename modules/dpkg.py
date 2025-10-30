@@ -164,7 +164,7 @@ class __DpkgPackager(utils.Packager):
             'If you received `Error: logrotate is not installed` during installation,\n' + \
             'please ensure that logrotate package is installed on your system.\n' + \
             'On Debian-based systems you can do that by running the following command:\n' + \
-            '   sudor apt install logrotate -y\n' 
+            '   sudo apt install logrotate -y\n' 
         utils.write_file_content(readme, content)
 
 
