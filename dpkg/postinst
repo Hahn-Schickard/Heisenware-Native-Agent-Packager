@@ -19,6 +19,7 @@ case "$1" in
         then
             echo "postinst enabling {SERVICE_NAME} unit"
             deb-systemd-helper enable '{SERVICE_NAME}.service'
+            deb-systemd-helper is-enabled '{SERVICE_NAME}.service';
         fi
 
         echo "postinst starting {SERVICE_NAME} unit"
