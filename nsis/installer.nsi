@@ -116,9 +116,9 @@ Function InstallService
     /*Reboot message*/ "Restarting ${PROGRAM_NAME}Service" \
     /*Command*/"" \
     /*First action*/"1" \
-    /*First action delay in ms*/"60000" \
+    /*First action delay in ms*/"10000" \
     /*Second action*/"2" \
-    /*Second action delay in ms*/"300000" \
+    /*Second action delay in ms*/"60000" \
     /*Third action*/"0" \
     /*Third action delay in ms*/"0"
   !insertmacro AbortOnError \
