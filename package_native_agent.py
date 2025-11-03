@@ -77,13 +77,14 @@ if __name__ == '__main__':
 
     arch = args.target_system
     arch = arch.lower()
-
+    arch_sanitized = arch.replace('_debian', '').replace(
+        '_fedora', '').replace('_windows', '')
     packager = PackagerArgs(this_dir,
                             Path(args.output_dir),
                             package_name,
                             input_file,
                             args.version,
-                            arch.replace('_debian', '').replace('_fedora', '').replace('_windows', ''))
+                            arch_sanitized)
 
     try:
         if arch.endswith('_debian'):
