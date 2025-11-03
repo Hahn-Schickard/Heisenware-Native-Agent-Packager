@@ -119,9 +119,10 @@ class __RpmPackager():
         shutil.rmtree(self.args.output_dir)
 
     def document(self):
-        readme = self.args.packager_dir.parent / 'README'
+        readme = self.args.output_dir.parent / 'README'
+        package_name = '{self.args.package_name}_{self.args.version}_{self.args.arch}'
         content = 'Run the following command to install the package:\n' + \
-            f'  sudo dnf localinstall {self.args.package_name}_{self.args.version}_{self.args.arch}.rpm\n' + \
+            f'  sudo dnf install {package_name}.rpm\n' + \
             'If you need to uninstall the package, run the following:\n' + \
             f'  sudo dnf remove {self.args.package_name}\n' + \
             '\n' + \
