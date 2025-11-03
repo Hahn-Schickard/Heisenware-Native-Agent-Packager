@@ -86,4 +86,4 @@ Example usage:
 * `rpm` - static and template files that are required for `.rpm` package creation
 * `nsis` - template files that are required by NSIS for Windows installer wizard creation
 * `modules` - internal Python modules that are responsible for chosen package/installer creation
-* `tests` - stores test inputs for `package_native_agent.py`, only used during development
+* `test_inputs` - stores test inputs for `package_native_agent.py`, only used during development
