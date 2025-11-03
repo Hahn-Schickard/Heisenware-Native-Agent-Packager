@@ -20,7 +20,6 @@ case "$1" in
             echo "postinst enabling {SERVICE_NAME} unit"
             deb-systemd-helper enable '{SERVICE_NAME}.service'
             deb-systemd-invoke --system daemon-reload
-            systemctl status '{SERVICE_NAME}.service'
         fi
 
         echo "postinst starting {SERVICE_NAME} unit"
