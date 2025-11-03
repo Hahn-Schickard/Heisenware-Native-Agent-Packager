@@ -23,8 +23,8 @@ This project provides utility tools to create various packages and installers fo
     * Allows the user to select the install location
     * Installs a windows service that:
         * Starts automatically on system startup
-        * Restarts a minute after failure
-        * Restarts 5 minutes after the first restart attempt failure
+        * Restarts 10s after failure
+        * Restarts 1 minutes after the first restart attempt failure
     * Creates an uninstaller that:
         * Checks if a service is running and asks for user consent to stop it, before continuing
         * Removes installed service
