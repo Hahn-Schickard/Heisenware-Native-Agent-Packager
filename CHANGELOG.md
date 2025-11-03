@@ -1,4 +1,37 @@
 # Changelog
+## [0.2.0] - 2025.11.03
+### Fixed
+ - Daemon service not being enabled for Ubuntu systems
+ - unicode detection for nsis on older debian machines
+ - relative paths not being handled for `--input_file` and `--output` args
+
+### Changed
+ - `dpkg/postinst` maintainer script to use `systemctl enable` instead of 
+`deb-systemd-helper enable` to fix daemon service enablement on Ubuntu machines
+ - first windows service restart delay to 10s and second restart to 1 minute
+ - `general` directory to `shared/general`
+ - `tests` into `test_inputs` to clarify the purpose of stored files
+ - `Packager` class to `PackagerArgs`
+ - `__DpkgPackager` class to use `PackagerArgs` instead of `Packager` inheritance
+ - `__NsisPackager` class to use `PackagerArgs` instead of `Packager` inheritance
+ - `package_native_agent.py` to pass `PackagerArgs` as an argument to various 
+`*.make()` calls
+ - `Test:Linux` configuration to `Test: Amd64 Debian` in `.vscode/launch.json` 
+
+### Added 
+ - `Build-Depends: debhelper, dh-systemd` to `dpkg/control` file
+ - `Depends: systemd` to `dpkg/control` file
+ - `nsis/hw-logo.ico` as (un)installer icon
+ - `shared/linux` directory to store shared daemon and config files
+ - `rpm/package_name.spec` RPM spec file template
+ - `__RpmPackager` class to handle RPM package creation
+ - `Amd64_Fedora` option for `--target_system` arg
+ - `Arm64_Fedora` option for `--target_system` arg 
+ - `Test: Arm64 Debian"` configuration to `.vscode/launch.json`
+ - `Test: Amd64 Fedora` configuration to `.vscode/launch.json`
+ - `Test: Arm64 Fedora` configuration to `.vscode/launch.json`
+ - `Tested on` section to `Readme.md`
+
 ## [0.1.0] - 2025.10.14
 ### Added
  - `genecis/LICENSE` file with placeholder text for commercial license
