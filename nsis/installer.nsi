@@ -1,12 +1,16 @@
+Unicode True
+
 !include MUI2.nsh
 !include LogicLib.nsh
 
+!define MUI_ICON "hw-logo.ico"
+!define MUI_UNICON "hw-logo.ico"
 !define PROGRAM_NAME "{NAME}"
 !define PROGRAM_VERSION "{VERSION}"
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
 
 Name "{SYNOPSIS} Installer Wizard"
-OutFile "..\{NAME}_Installer.exe"
+OutFile "..\{NAME}_installer.exe"
 InstallDir "$ProgramFiles\${PROGRAM_NAME}"
 InstallDirRegKey HKLM "${UNINSTALL_REG_KEY}" InstallLocation
 RequestExecutionLevel admin
@@ -116,9 +120,9 @@ Function InstallService
     /*Reboot message*/ "Restarting ${PROGRAM_NAME}Service" \
     /*Command*/"" \
     /*First action*/"1" \
-    /*First action delay in ms*/"60000" \
+    /*First action delay in ms*/"10000" \
     /*Second action*/"2" \
-    /*Second action delay in ms*/"300000" \
+    /*Second action delay in ms*/"60000" \
     /*Third action*/"0" \
     /*Third action delay in ms*/"0"
   !insertmacro AbortOnError \

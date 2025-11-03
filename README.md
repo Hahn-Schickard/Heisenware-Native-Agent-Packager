@@ -16,13 +16,15 @@ This project provides utility tools to create various packages and installers fo
         * (Un)Install the daemon service
         * Creates `/var/log/heisenware/` directory if it does not exist
     * Support for **Amd64** and **Arm64** architectures
+ * Generated `.rpm` packages with: 
+    * Same features as `.deb` packages
  * Generates Windows installer wizards that:
     * Checks if a previous installation exists
     * Allows the user to select the install location
     * Installs a windows service that:
         * Starts automatically on system startup
-        * Restarts a minute after failure
-        * Restarts 5 minutes after the first restart attempt failure
+        * Restarts 10s after failure
+        * Restarts 1 minutes after the first restart attempt failure
     * Creates an uninstaller that:
         * Checks if a service is running and asks for user consent to stop it, before continuing
         * Removes installed service
@@ -35,7 +37,7 @@ This project provides utility tools to create various packages and installers fo
     * Supports **Amd64** architecture for installed binaries (generated installer uses **x86** architecture)
 
 ## Requirements
- * python >3.7 - used to execute package generation scripts
+ * python >3.9 - used to execute package generation scripts
  * [dpkg](https://tracker.debian.org/pkg/dpkg) - used to build .deb packages (not necessary, if you don't plan to build dpkg packages)
  * [NSIS](https://nsis.sourceforge.io/Main_Page) - Nullsoft Scriptable Install System, used to create windows installer wizard (not necessary, if you don't plan to build windows installers)
     * [NSIS Simple Service Plugin](https://nsis.sourceforge.io/NSIS_Simple_Service_Plugin) - use to generate windows service installation scripts
@@ -43,7 +45,7 @@ This project provides utility tools to create various packages and installers fo
 To install all of the above mentioned requirements, please use the following commands:
 
 ```bash
-sudo apt install dpkg nsis python3 unzip wget -y
+sudo apt install dpkg nsis python3 unzip wget rpm -y
 wget -O NSIS_Simple_Service.zip https://nsis.sourceforge.io/mediawiki/images/e/ef/NSIS_Simple_Service_Plugin_Unicode_1.30.zip
 unzip -d nsis_service NSIS_Simple_Service.zip && rm NSIS_Simple_Service.zip
 sudo mv nsis_service/SimpleSC.dll /usr/share/nsis/Plugins/x86-unicode/ && rm -rf nsis_service
@@ -76,11 +78,24 @@ Example usage:
 ./package_native_agent.py --input_file input_binary --target_system Amd64_Debian --agent_id abcd --account_name Test --workspace_name Default --version 00-1
 ```
 
+## Tested on
+Package generation has been manually tested with appropriate `test_inputs` files on the following systems:
+ * debian trixie
+ * debian bullseye
+ * ubuntu 24.04
+
+Generated package usage (installation, update and removal) has been manually tested on the following systems: 
+ * debian trixie
+ * ubuntu 24.04
+ * fedora 43
+ * windows 11 Version 10.0.26100 Build 26100
+
 ## Project structure
 
 * `.vscode` - shared VSCode configuration files
-* `generic` - static files that are used by all packages/installers during creation 
+* `shared` - static files that are used by all packages/installers during creation 
 * `dpkg` - static and template files that are required for `.deb` package creation
+* `rpm` - static and template files that are required for `.rpm` package creation
 * `nsis` - template files that are required by NSIS for Windows installer wizard creation
 * `modules` - internal Python modules that are responsible for chosen package/installer creation
-* `tests` - stores test inputs for `package_native_agent.py`, only used during development
+* `test_inputs` - stores test inputs for `package_native_agent.py`, only used during development

@@ -3,7 +3,8 @@ Version: {VERSION}
 Section: net
 Priority: optional
 Architecture: {ARCH}
-Depends: logrotate
+Depends: logrotate, systemd
+Build-Depends: debhelper, dh-systemd
 Maintainer: Burkhard Heisen <burkhard.heisenware@heisenware.com>
 Description: {SYNOPSIS}
  {DESCRIPTION}

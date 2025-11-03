@@ -4,7 +4,9 @@ import argparse
 import sys
 import traceback
 from pathlib import Path
+from modules.utils import PackagerArgs
 import modules.dpkg as dpkg
+import modules.rpm as rpm
 import modules.nsis as nsis
 
 
@@ -30,6 +32,8 @@ def make_args():
         choices=[
             'Amd64_Debian',
             'Arm64_Debian',
+            'Amd64_Fedora',
+            'Arm64_Fedora',
             'Amd64_Windows'
         ],
         required=True
@@ -73,32 +77,27 @@ if __name__ == '__main__':
 
     arch = args.target_system
     arch = arch.lower()
+    arch_sanitized = arch.replace('_debian', '').replace(
+        '_fedora', '').replace('_windows', '')
+    packager = PackagerArgs(this_dir,
+                            Path(args.output_dir),
+                            package_name,
+                            input_file,
+                            args.version,
+                            arch_sanitized)
 
     try:
         if arch.endswith('_debian'):
-            arch = arch.replace('_debian', '')
-            dpkg.make(this_dir,
-                    args.output_dir,
-                    package_name,
-                    input_file,
-                    args.version,
-                    arch
-                    )
+            dpkg.make(packager)
+        elif arch.endswith('_fedora'):
+            rpm.make(packager)
         elif arch.endswith('_windows'):
             openssl_dir = input_file.parent / 'openssl'
             if not openssl_dir.is_dir():
                 print(f'Expected Openssl directory in {openssl_dir},'
-                    ' but it does not exists', file=sys.stderr)
+                      ' but it does not exists', file=sys.stderr)
                 sys.exit(1)
-
-            arch = arch.replace('_windows', '')
-            nsis.make(this_dir,
-                    args.output_dir,
-                    package_name,
-                    input_file,
-                    args.version,
-                    arch
-                    )
+            nsis.make(packager)
     except Exception:
         print(traceback.format_exc(), file=sys.stderr)
         sys.exit(1)
