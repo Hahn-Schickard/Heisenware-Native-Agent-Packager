@@ -18,7 +18,8 @@ case "$1" in
         if ! deb-systemd-helper --quiet is-enabled '{SERVICE_NAME}.service';
         then
             echo "postinst enabling {SERVICE_NAME} unit"
-            deb-systemd-helper enable '{SERVICE_NAME}.service'
+            # Ubuntu does not work well with deb-systemd-helper enable
+            systemctl enable '{SERVICE_NAME}.service'
             deb-systemd-invoke --system daemon-reload
         fi
 
