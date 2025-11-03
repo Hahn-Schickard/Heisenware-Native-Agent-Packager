@@ -32,25 +32,13 @@ install -m 0644 {NAME}.service %{buildroot}%{_unitdir}/{NAME}.service
 install -m 0644 {NAME} %{buildroot}/etc/logrotate.d/{NAME}
 
 %pre
-if [ systemctl is-enabled {NAME}.service && 
-     systemctl is-active --quiet {NAME}.service ]; 
-then
-    systemctl stop {NAME}.service
-fi
+systemctl is-active {NAME}.service > /dev/null 2>&1 && systemctl stop {NAME}.service || :   
 
 %post
-if [ ! $(systemctl is-enabled {NAME}.service) ]; 
-then
-    systemctl enable {NAME}.service
-    systemctl start {NAME}.service
-fi
+systemctl enable --now {NAME}.service >/dev/null 2>&1 || :
 
 %preun
-if [ systemctl is-enabled {NAME}.service && 
-     systemctl is-active --quiet {NAME}.service ]; 
-then
-    systemctl stop {NAME}.service
-fi
+systemctl stop {NAME}.service || :
 
 %postun
 systemctl daemon-reload
