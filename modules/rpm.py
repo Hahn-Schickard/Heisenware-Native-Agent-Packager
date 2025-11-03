@@ -120,11 +120,11 @@ class __RpmPackager():
 
     def document(self):
         readme = self.args.output_dir.parent / 'README'
-        package_name = f'{self.args.package_name}_{self.args.version}_{self.args.arch}'
+        package_name = f'{self.args.package_name}-{self.args.version}-1.{self.args.arch}.rpm'
         content = 'Run the following command to install the package:\n' + \
-            f'  sudo dnf install {package_name}.rpm\n' + \
+            f'  sudo dnf install -y {package_name}\n' + \
             'If you need to uninstall the package, run the following:\n' + \
-            f'  sudo dnf remove {self.args.package_name}\n' + \
+            f'  sudo dnf remove -y {self.args.package_name}\n' + \
             '\n' + \
             'If you received `Error: logrotate is not installed` during installation,\n' + \
             'please ensure that logrotate package is installed on your system.\n' + \
