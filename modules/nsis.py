@@ -1,69 +1,53 @@
 import shutil
 import subprocess
-from pathlib import Path
 import modules.utils as utils
 
 
-class __NsisPackager(utils.Packager):
+class __NsisPackager():
     def __init__(self,
-                 work_dir: Path,
-                 output_dir: Path,
-                 name: str,
-                 binary_path: Path,
-                 version: str,
-                 arch: str
-                 ):
-        utils.Packager.__init__(
-            self,
-            work_dir,
-            output_dir,
-            name,
-            binary_path,
-            version, arch
-        )
-        self.installer_dir = self.package_dir
-
+                 args: utils.PackagerArgs):
+        self.args = args
+        
     def setup_workplace(self):
-        template_dir = self.cwd / 'nsis'
+        template_dir = self.args.packager_dir / 'nsis'
         if not template_dir.is_dir():
             raise FileNotFoundError(f'Directory {template_dir} does not exist')
 
-        utils.make_clean_dir(self.installer_dir)
+        utils.make_clean_dir(self.args.output_dir)
 
-        shutil.copytree(src=template_dir, dst=self.installer_dir,
+        shutil.copytree(src=template_dir, dst=self.args.output_dir,
                         dirs_exist_ok=True)
-        self.installer_dir.chmod(0o755)
+        self.args.output_dir.chmod(0o755)
 
-    def add_binary(self, binary: Path):
-        binary_path = self.cwd / binary
-        shutil.copy(src=binary_path, dst=self.installer_dir)
-        installed_binary = self.installer_dir / binary.name
+    def add_binary(self):
+        shutil.copy(src=self.args.binary_path, dst=self.args.output_dir)
+        installed_binary = self.args.output_dir / self.args.binary_name
         installed_binary.chmod(0o755)
 
-        openssl_dir = binary.parent / 'openssl'
-        installed_openssl = self.installer_dir / 'openssl'
+        openssl_dir = self.args.binary_path.parent / 'openssl'
+        installed_openssl = self.args.output_dir / 'openssl'
         shutil.copytree(src=openssl_dir, dst=installed_openssl,
                         dirs_exist_ok=True)
         installed_openssl.chmod(0o755)
 
     def add_license(self):
-        shutil.copy(src=self.license_file, dst=self.installer_dir)
+        shutil.copy(src=self.args.license_file, dst=self.args.output_dir)
 
     def update_installer(self):
-        installer_file = self.installer_dir / 'installer.nsi'
+        installer_file = self.args.output_dir / 'installer.nsi'
         content = utils.read_file_content(installer_file)
 
-        content = content.replace('{NAME}', self.package_name)
-        content = content.replace('{VERSION}', self.version)
+        content = content.replace('{NAME}', self.args.package_name)
+        content = content.replace('{VERSION}', self.args.version)
 
-        synopsis = utils.read_file_content(self.synopsis_file)
+        synopsis = utils.read_file_content(self.args.synopsis_file)
         content = content.replace('{SYNOPSIS}', synopsis)
 
-        description = utils.read_file_content(self.description_file)
+        description = utils.read_file_content(self.args.description_file)
         content = content.replace('{DESCRIPTION}', description)
 
         content = content.replace(
-            '{HEISENWARE_AGENT_BINARY}', self.binary_name)
+            '{HEISENWARE_AGENT_BINARY}', self.args.binary_name)
 
         utils.write_file_content(installer_file, content)
 
@@ -73,19 +57,19 @@ class __NsisPackager(utils.Packager):
         if nsis_found.returncode != 0:
             raise FileNotFoundError('makensis not found')
 
-        nsis_file = self.installer_dir / 'installer.nsi'
+        nsis_file = self.args.output_dir / 'installer.nsi'
         subprocess.run(
             ['makensis', '-v2', nsis_file],
-            cwd=self.installer_dir,
+            cwd=self.args.output_dir,
             check=True
         )
-        shutil.rmtree(self.installer_dir)
+        shutil.rmtree(self.args.output_dir)
 
 
-def make(work_dir: Path, output_dir: Path, name: str, binary_path: Path, version: str, arch: str):
-    packager = __NsisPackager(work_dir, output_dir, name, binary_path, version, arch)
+def make(args: utils.PackagerArgs):
+    packager = __NsisPackager(args)
     packager.setup_workplace()
-    packager.add_binary(binary_path)
+    packager.add_binary()
     packager.add_license()
     packager.update_installer()
     packager.build()
