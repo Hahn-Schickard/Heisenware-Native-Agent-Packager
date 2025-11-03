@@ -78,6 +78,18 @@ Example usage:
 ./package_native_agent.py --input_file input_binary --target_system Amd64_Debian --agent_id abcd --account_name Test --workspace_name Default --version 00-1
 ```
 
+## Tested on
+Package generation has been manually tested with appropriate `test_inputs` files on the following systems:
+ * debian trixie
+ * debian bullseye
+ * ubuntu 24.04
+
+Generated package usage (installation, update and removal) has been manually tested on the following systems: 
+ * debian trixie
+ * ubuntu 24.04
+ * fedora 43
+ * windows 11 Version 10.0.26100 Build 26100
+
 ## Project structure
 
 * `.vscode` - shared VSCode configuration files
