@@ -15,7 +15,7 @@ case "$1" in
             deb-systemd-helper update-state '{SERVICE_NAME}.service'
         fi
 
-        if [ ! $(deb-systemd-helper --quiet is-enabled '{SERVICE_NAME}.service') ];
+        if ! deb-systemd-helper --quiet is-enabled '{SERVICE_NAME}.service';
         then
             echo "postinst enabling {SERVICE_NAME} unit"
             deb-systemd-helper enable '{SERVICE_NAME}.service'
