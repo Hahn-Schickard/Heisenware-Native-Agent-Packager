@@ -89,6 +89,8 @@ class __RpmPackager():
 
     def add_license(self):
         shutil.copy(src=self.args.license_file, dst=self.args.output_dir)
+        installed_license_file = self.args.output_dir / self.args.license_file.name
+        installed_license_file.chmod(0o644)
 
     def build(self):
         rpm_found = subprocess.run(
