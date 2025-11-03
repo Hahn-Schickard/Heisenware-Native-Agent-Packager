@@ -10,5 +10,4 @@ RestartSec=5
 Restart=on-failure
 
 [Install]
-Alias={NAME}
 WantedBy=multi-user.target
