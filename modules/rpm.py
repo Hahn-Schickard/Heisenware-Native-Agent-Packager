@@ -120,7 +120,7 @@ class __RpmPackager():
 
     def document(self):
         readme = self.args.output_dir.parent / 'README'
-        package_name = '{self.args.package_name}_{self.args.version}_{self.args.arch}'
+        package_name = f'{self.args.package_name}_{self.args.version}_{self.args.arch}'
         content = 'Run the following command to install the package:\n' + \
             f'  sudo dnf install {package_name}.rpm\n' + \
             'If you need to uninstall the package, run the following:\n' + \
