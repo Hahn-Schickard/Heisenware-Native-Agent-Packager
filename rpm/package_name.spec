@@ -36,6 +36,7 @@ systemctl is-active {NAME}.service > /dev/null 2>&1 && systemctl stop {NAME}.ser
 
 %post
 systemctl enable --now {NAME}.service >/dev/null 2>&1 || :
+systemctl daemon-reload
 
 %preun
 systemctl stop {NAME}.service || :
