@@ -104,7 +104,8 @@ class __RpmPackager():
              '--nodebuginfo',
              f'--target={self.args.arch}',
              f'{self.spec_file}',
-             '-bb'             
+             '-bb',
+             '--quiet'         
              ],
             cwd=self.args.output_dir,
             check=True
