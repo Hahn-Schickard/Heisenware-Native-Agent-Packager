@@ -2,6 +2,7 @@ from pathlib import Path
 import shutil
 import os
 
+
 def make_clean_dir(path: Path, mode=0o755):
     if path.is_dir():
         shutil.rmtree(path)
@@ -30,10 +31,12 @@ def write_file_content(path: Path, content: str, mode=0o744):
         file.write(content)
     path.chmod(mode)
 
+
 def update_script(script_file: Path, service_name: str):
     content = read_file_content(script_file)
     content = content.replace('{SERVICE_NAME}', service_name)
     write_file_content(script_file, content, mode=0o755)
+
 
 class PackagerArgs:
     def __init__(self,

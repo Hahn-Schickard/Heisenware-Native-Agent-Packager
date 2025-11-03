@@ -105,7 +105,7 @@ class __RpmPackager():
              f'--target={self.args.arch}',
              f'{self.spec_file}',
              '-bb',
-             '--quiet'         
+             '--quiet'
              ],
             cwd=self.args.output_dir,
             check=True
@@ -114,7 +114,8 @@ class __RpmPackager():
         self.args.arch = self.args.arch.replace('-linux', '')
         rpm_package_name = f'{self.args.package_name}-{self.args.version}-1.{self.args.arch}.rpm'
         rmp_file = self.args.output_dir / self.args.arch / rpm_package_name
-        shutil.move(src=rmp_file, dst=self.args.output_dir.parent / rpm_package_name)
+        shutil.move(
+            src=rmp_file, dst=self.args.output_dir.parent / rpm_package_name)
         shutil.rmtree(self.args.output_dir)
 
     def document(self):

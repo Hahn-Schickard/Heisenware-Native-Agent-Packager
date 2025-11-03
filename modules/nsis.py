@@ -7,7 +7,7 @@ class __NsisPackager():
     def __init__(self,
                  args: utils.PackagerArgs):
         self.args = args
-        
+
     def setup_workplace(self):
         template_dir = self.args.packager_dir / 'nsis'
         if not template_dir.is_dir():
