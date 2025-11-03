@@ -3,6 +3,8 @@ Unicode True
 !include MUI2.nsh
 !include LogicLib.nsh
 
+!define MUI_ICON "hw-logo.ico"
+!define MUI_UNICON "hw-logo.ico"
 !define PROGRAM_NAME "{NAME}"
 !define PROGRAM_VERSION "{VERSION}"
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
