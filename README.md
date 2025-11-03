@@ -37,7 +37,7 @@ This project provides utility tools to create various packages and installers fo
     * Supports **Amd64** architecture for installed binaries (generated installer uses **x86** architecture)
 
 ## Requirements
- * python >3.7 - used to execute package generation scripts
+ * python >3.9 - used to execute package generation scripts
  * [dpkg](https://tracker.debian.org/pkg/dpkg) - used to build .deb packages (not necessary, if you don't plan to build dpkg packages)
  * [NSIS](https://nsis.sourceforge.io/Main_Page) - Nullsoft Scriptable Install System, used to create windows installer wizard (not necessary, if you don't plan to build windows installers)
     * [NSIS Simple Service Plugin](https://nsis.sourceforge.io/NSIS_Simple_Service_Plugin) - use to generate windows service installation scripts
