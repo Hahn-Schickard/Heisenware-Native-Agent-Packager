@@ -4,6 +4,7 @@ This project provides utility tools to create various packages and installers fo
 ## Features
  * Generates `.deb` packages with:
     * Daemon service that:
+        * Has it's own working directory under `/var/lib/heisenware/`
         * Starts automatically on system startup
         * Restarts 5s after service failure
         * Saves called service binary output in `journal`
@@ -21,10 +22,11 @@ This project provides utility tools to create various packages and installers fo
  * Generates Windows installer wizards that:
     * Checks if a previous installation exists
     * Allows the user to select the install location
+    * Checks if chosen installation path is not in disk root or blacklisted folders
     * Installs a windows service that:
         * Starts automatically on system startup
         * Restarts 10s after failure
-        * Restarts 1 minutes after the first restart attempt failure
+        * Logs `StdOut` and `StdErr` to `${INSTDIR}/logs/service.log`
     * Creates an uninstaller that:
         * Checks if a service is running and asks for user consent to stop it, before continuing
         * Removes installed service
