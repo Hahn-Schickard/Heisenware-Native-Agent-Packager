@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# emulate workdir usage
+echo "some id" > .hw-agent-id 
+mkdir .hw-cache
+echo "some cache data" > .hw-cache/cacheFille1
+
 while true; do
     echo "Simulate a process message"
     sleep 1
