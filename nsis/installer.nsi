@@ -8,6 +8,7 @@ Unicode True
 !define PROGRAM_NAME "{NAME}"
 !define PROGRAM_VERSION "{VERSION}"
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
+!define EXEC_TIMEOUT "10000" ; measured in ms
 
 Name "{SYNOPSIS} Installer Wizard"
 OutFile "..\{NAME}_installer.exe"
@@ -95,33 +96,35 @@ FunctionEnd
 
 !macro makeRemoveService un
   Function ${un}RemoveService
-    ; Define nssm path.
-    ; ${If} "${un}" == "un." -> $INSTDIR (uninstaller)
-    ; ${Else}                 -> $EXEDIR (installer)
-    ${If} "${un}" == "un."
-      StrCpy $R0 '"$INSTDIR\nssm.exe"'
-    ${Else}
-      StrCpy $R0 '"$EXEDIR\nssm.exe"'
-    ${EndIf}
-
+    DetailPrint "Stopping and removing ${PROGRAM_NAME}Service"
     ; Use nssm status to check service state
     ; 5 = SERVICE_NOT_FOUND
-    ExecWait '$R0 status "${PROGRAM_NAME}Service"' $0
-
-    ${If} $0 != 5 ; If service exists (is not "not found")
+    nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+      '"$INSTDIR\nssm.exe" status "${PROGRAM_NAME}Service"'
+    Pop $0
+    Pop $1
+    
+    ${If} $0 != 3 ; If service exists (is not "not found")
+      DetailPrint '$1'
       ; Check if service is running (status == 0)
       ${If} $0 == 0
         ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-          ExecWait '$R0 stop "${PROGRAM_NAME}Service"'
-          DetailPrint "${PROGRAM_NAME}Service stopped"
+          nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+            '"$INSTDIR\nssm.exe" stop "${PROGRAM_NAME}Service"'
+          Pop $0
+          Pop $1
+          DetailPrint "$1"
         ${Else}
           Abort "Keeping old files and aborting installation"
         ${EndIf}
       ${EndIf}
 
       ; Remove the service
-      ExecWait '$R0 remove "${PROGRAM_NAME}Service" confirm'
-      DetailPrint "${PROGRAM_NAME}Service removed"
+      nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+        '"$INSTDIR\nssm.exe" remove "${PROGRAM_NAME}Service" confirm'
+      Pop $0
+      Pop $1
+      DetailPrint "$1"
     ${EndIf}
   FunctionEnd
 !macroend
@@ -129,10 +132,32 @@ FunctionEnd
 !insertmacro makeRemoveService ""
 !insertmacro makeRemoveService "un."
 
+!macro makeRemoveInstalled un
+  Function ${un}RemoveInstalled
+    Call ${un}RemoveService
+    DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
+    DetailPrint "Removed ${UNINSTALL_REG_KEY} WinRegKey"
+    RmDir /r $INSTDIR\openssl
+    DetailPrint "Removed $INSTDIR\openssl folder"
+    Delete $INSTDIR\nssm.exe
+    DetailPrint "Removed $INSTDIR\nssm.exe"
+    Delete $INSTDIR\uninstaller.exe
+    DetailPrint "Removed $INSTDIR\uninstaller.exe"
+    SetOutPath "$TEMP"
+    RmDir /r $INSTDIR
+    DetailPrint "Removed $INSTDIR directory and it's content"
+  FunctionEnd
+!macroend
+
+!insertmacro makeRemoveInstalled ""
+!insertmacro makeRemoveInstalled "un."
+
 !macro AbortOnError AbortMsg SuccessMsg
   Pop $0
   ${If} $0 != "0"
-    MessageBox MB_OK "${AbortMsg} (Exit code: $0)"
+    Pop $1
+    MessageBox MB_OK "${AbortMsg}$\r$\nExit code: $0$\r$\nError: $1"
+    Call RemoveInstalled
     Abort "${AbortMsg}"
   ${Else}
     DetailPrint "${SuccessMsg}"
@@ -141,51 +166,63 @@ FunctionEnd
 
 Function InstallService
   Call RemoveService ; This will remove any old service
-
   ; Install the service using nssm
-  ExecWait '"$EXEDIR\nssm.exe" install "${PROGRAM_NAME}Service" "$INSTDIR\{HEISENWARE_AGENT_BINARY}"'
+  nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" install "${PROGRAM_NAME}Service" "$INSTDIR\{HEISENWARE_AGENT_BINARY}"'
   !insertmacro AbortOnError \
     "Failed to install ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service Installed"
 
-  ; --- FIXED SECTION ---
   ; Set Service Display Name (the "Name" column in services.msc)
-  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" DisplayName "{SYNOPSIS}"'
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" DisplayName "{SYNOPSIS}"'
 
   ; Set Service Description (the "Description" column in services.msc)
-  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" Description "{DESCRIPTION}"'
-  ; --- END FIXED SECTION ---
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Description "{DESCRIPTION}"'
 
   ; Set Start type (2 = SERVICE_AUTO_START)
-  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" Start SERVICE_AUTO_START'
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Start SERVICE_AUTO_START'
 
   ; Set restart policy (matches your original 10000ms delay)
-  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRestartDelay 10000'
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRestartDelay 10000'
   DetailPrint "${PROGRAM_NAME}Service restart policy configured"
 
+  ; Set up StdOut and StdError logging
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppStdout $INSTDIR\logs\service.log'
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppStderr $INSTDIR\logs\service.log'
+  ; Enable log file rotation 
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRotateFiles 1'
+  ; Rotate log files while service is running
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRotateOnline 1'
+  ; Rotate log files when log file is larger than 20 MB
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRotateBytes 20971520'
+  DetailPrint "${PROGRAM_NAME}Service logging policy configured"
+
   ; Start the service
-  ExecWait '"$EXEDIR\nssm.exe" start "${PROGRAM_NAME}Service"'
+  nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" start "${PROGRAM_NAME}Service"'
   !insertmacro AbortOnError \
     "Could not start ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service started"
 FunctionEnd
 
-!macro makeRemoveInstalled un
-  Function ${un}RemoveInstalled
-    Call ${un}RemoveService
-    DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-    DetailPrint "Removed ${UNINSTALL_REG_KEY} WinRegKey"
-    RmDir /r "$INSTDIR"
-    Delete $INSTDIR\uninstaller.exe
-    RmDir $INSTDIR
-    DetailPrint "Removed $INSTDIR directory and it's content"
-  FunctionEnd
-!macroend
-
-!insertmacro makeRemoveInstalled ""
-!insertmacro makeRemoveInstalled "un."
-
 Function CleanInstall
+  Call isInRoot
+  Call isInBadPath
+
+  ${IfNot} ${FileExists} "$INSTDIR\logs"
+    CreateDirectory "$INSTDIR\logs"
+    DetailPrint "Created $INSTDIR\logs folder"
+  ${EndIf}
+
   ${If} ${FileExists} "$INSTDIR\openssl"
     ${If} ${Cmd} `MessageBox MB_OKCANCEL "$INSTDIR\openssl already exists. Delete it?" IDOK`
       RMDir /r $INSTDIR\openssl
@@ -195,14 +232,13 @@ Function CleanInstall
     ${EndIf}
   ${EndIf}
 
-  ; Copy nssm.exe from installer directory to install directory
-  CopyFiles "$EXEDIR\nssm.exe" "$INSTDIR"
-  ${If} ${Errors}
-    MessageBox MB_OK "Could not find nssm.exe in the installer directory. Aborting."
-    Abort "nssm.exe not found"
+  ${If} ${FileExists} "$INSTDIR\nssm.exe"
+    Delete "$INSTDIR\nssm.exe"
+    DetailPrint "Deleted original $INSTDIR\nssm.exe"
   ${EndIf}
 
   File /r openssl
+  File nssm.exe
   File "{HEISENWARE_AGENT_BINARY}"
   SetShellVarContext all
   WriteUninstaller $INSTDIR\uninstaller.exe
