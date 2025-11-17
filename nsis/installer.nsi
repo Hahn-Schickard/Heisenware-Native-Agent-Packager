@@ -27,12 +27,12 @@ Page Directory DirectoryHeader
 Page InstFiles InstallHeader
 
 Function DirectoryHeader
-  !insertmacro MUI_HEADER_TEXT "Installation location" \ 
+  !insertmacro MUI_HEADER_TEXT "Installation location" \
     "Please select the location where the files should be installed"
 FunctionEnd
 
 Function InstallHeader
-  !insertmacro MUI_HEADER_TEXT \ 
+  !insertmacro MUI_HEADER_TEXT \
     "Installing files" \
     "Your files are currently being installed"
 FunctionEnd
@@ -62,77 +62,76 @@ FunctionEnd
 
 !macro makeRemoveService un
   Function ${un}RemoveService
-    SimpleSC::ExistsService "${PROGRAM_NAME}Service"
-    Pop $0
-    ${If} $0 == "0"
-      SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
-      Pop $0
-      Pop $1
-      ${If} "$0$1" == "01"
+    ; Define nssm path.
+    ; ${If} "${un}" == "un." -> $INSTDIR (uninstaller)
+    ; ${Else}                 -> $EXEDIR (installer)
+    ${If} "${un}" == "un."
+      StrCpy $R0 '"$INSTDIR\nssm.exe"'
+    ${Else}
+      StrCpy $R0 '"$EXEDIR\nssm.exe"'
+    ${EndIf}
+
+    ; Use nssm status to check service state
+    ; 5 = SERVICE_NOT_FOUND
+    ExecWait '$R0 status "${PROGRAM_NAME}Service"' $0
+
+    ${If} $0 != 5 ; If service exists (is not "not found")
+      ; Check if service is running (status == 0)
+      ${If} $0 == 0
         ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-          SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
+          ExecWait '$R0 stop "${PROGRAM_NAME}Service"'
           DetailPrint "${PROGRAM_NAME}Service stopped"
         ${Else}
           Abort "Keeping old files and aborting installation"
         ${EndIf}
       ${EndIf}
-      SimpleSC::RemoveService "${PROGRAM_NAME}Service"
+
+      ; Remove the service
+      ExecWait '$R0 remove "${PROGRAM_NAME}Service" confirm'
       DetailPrint "${PROGRAM_NAME}Service removed"
     ${EndIf}
   FunctionEnd
 !macroend
 
-!insertmacro makeRemoveService "" 
+!insertmacro makeRemoveService ""
 !insertmacro makeRemoveService "un."
 
 !macro AbortOnError AbortMsg SuccessMsg
   Pop $0
   ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
-    Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "${AbortMsg}:\r$\n$0" IDOK`
-      Abort "${AbortMsg}: $0"
-    ${EndIf}
+    MessageBox MB_OK "${AbortMsg} (Exit code: $0)"
+    Abort "${AbortMsg}"
   ${Else}
     DetailPrint "${SuccessMsg}"
   ${EndIf}
 !macroend
 
 Function InstallService
-  Call RemoveService
-  SimpleSC::InstallService \
-    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
-    /*Service Display name*/ "{SYNOPSIS} {DESCRIPTION}" \
-    /*Service type, 16 = SERVICE_WIN32_OWN_PROCESS*/ "16" \
-    /*Service start type, 2 = SERVICE_AUTO_START*/ "2" \
-    /*Path to the service binary executable*/ "$INSTDIR\{HEISENWARE_AGENT_BINARY}" \
-    /*Service dependency list*/ "" \
-    /*Executing account name, empty = system account*/ "" \
-    /*Executing account password, empty = system account*/ ""
+  Call RemoveService ; This will remove any old service
+
+  ; Install the service using nssm
+  ExecWait '"$EXEDIR\nssm.exe" install "${PROGRAM_NAME}Service" "$INSTDIR\{HEISENWARE_AGENT_BINARY}"'
   !insertmacro AbortOnError \
     "Failed to install ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service Installed"
 
-  SimpleSC::SetServiceFailure \
-    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
-    /*Reset period*/ "0" \
-    /*Reboot message*/ "Restarting ${PROGRAM_NAME}Service" \
-    /*Command*/"" \
-    /*First action*/"1" \
-    /*First action delay in ms*/"10000" \
-    /*Second action*/"2" \
-    /*Second action delay in ms*/"60000" \
-    /*Third action*/"0" \
-    /*Third action delay in ms*/"0"
-  !insertmacro AbortOnError \
-    "Failed to set restart policy for ${PROGRAM_NAME}Service due to error" \
-    "${PROGRAM_NAME}Service restart policy configured"
-  
-  SimpleSC::StartService \
-    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
-    /*Service input args*/ "" \
-    /*Service start timeout in s*/ 60
+  ; --- FIXED SECTION ---
+  ; Set Service Display Name (the "Name" column in services.msc)
+  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" DisplayName "{SYNOPSIS}"'
+
+  ; Set Service Description (the "Description" column in services.msc)
+  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" Description "{DESCRIPTION}"'
+  ; --- END FIXED SECTION ---
+
+  ; Set Start type (2 = SERVICE_AUTO_START)
+  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" Start SERVICE_AUTO_START'
+
+  ; Set restart policy (matches your original 10000ms delay)
+  ExecWait '"$EXEDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRestartDelay 10000'
+  DetailPrint "${PROGRAM_NAME}Service restart policy configured"
+
+  ; Start the service
+  ExecWait '"$EXEDIR\nssm.exe" start "${PROGRAM_NAME}Service"'
   !insertmacro AbortOnError \
     "Could not start ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service started"
@@ -150,7 +149,7 @@ FunctionEnd
   FunctionEnd
 !macroend
 
-!insertmacro makeRemoveInstalled "" 
+!insertmacro makeRemoveInstalled ""
 !insertmacro makeRemoveInstalled "un."
 
 Function CleanInstall
@@ -161,6 +160,13 @@ Function CleanInstall
     ${Else}
       DetailPrint "Keeping old $INSTDIR\openssl folder"
     ${EndIf}
+  ${EndIf}
+
+  ; Copy nssm.exe from installer directory to install directory
+  CopyFiles "$EXEDIR\nssm.exe" "$INSTDIR"
+  ${If} ${Errors}
+    MessageBox MB_OK "Could not find nssm.exe in the installer directory. Aborting."
+    Abort "nssm.exe not found"
   ${EndIf}
 
   File /r openssl
