@@ -53,6 +53,39 @@ Function .onInit
     ${EndIf}
 FunctionEnd
 
+Function isInRoot
+  DetailPrint "Checking if installation path is inside disk root"
+    ; get disk root path
+  StrCpy $R0 $INSTDIR 3
+
+  ; check if disk root matches INSTDIR
+  StrCmp $R0 "$INSTDIR" 0 +2
+    Abort "Installing in disk root is not allowed. Please create a new folder inside $R0"
+FunctionEnd
+
+!macro checkInstPath Path
+  StrCmp $INSTDIR "${Path}" 0 +3
+    MessageBox MB_OK "Installing in ${Path} is not allowed! Please create a new folder inside"
+    Abort "Installing in ${Path} is not allowed!"
+!macroend
+
+Function isInBadPath
+  DetailPrint "Checking if installation path is inside a blacklisted path"
+
+  ; NSIS does not have arrays, and using StrTok is clumsy and unreliable
+  !insertmacro checkInstPath "$SYSDIR"
+  !insertmacro checkInstPath "$WINDIR"
+  !insertmacro checkInstPath "$PROGRAMFILES"
+  !insertmacro checkInstPath "$PROGRAMFILES64"
+  !insertmacro checkInstPath "$DESKTOP"
+  !insertmacro checkInstPath "$DOCUMENTS"
+  !insertmacro checkInstPath "$MUSIC"
+  !insertmacro checkInstPath "$PICTURES"
+  !insertmacro checkInstPath "$VIDEOS"
+  !insertmacro checkInstPath "$APPDATA"
+  !insertmacro checkInstPath "$LOCALAPPDATA"
+FunctionEnd
+
 Function SetRegistryKeys
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayName" "${PROGRAM_NAME}"
     WriteRegStr HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion" "${PROGRAM_VERSION}"
