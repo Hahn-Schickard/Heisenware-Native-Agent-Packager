@@ -97,6 +97,12 @@ if __name__ == '__main__':
                 print(f'Expected Openssl directory in {openssl_dir},'
                       ' but it does not exists', file=sys.stderr)
                 sys.exit(1)
+            
+            nssm_binary = input_file.parent / 'nssm.exe'
+            if not nssm_binary.exists():
+                print(f'Expected NSSM executable in {openssl_dir},'
+                      ' but it does not exists', file=sys.stderr)
+                sys.exit(1)
             nsis.make(packager)
     except Exception:
         print(traceback.format_exc(), file=sys.stderr)
