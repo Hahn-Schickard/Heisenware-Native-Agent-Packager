@@ -5,6 +5,8 @@ Unicode True
 
 !define MUI_ICON "hw-logo.ico"
 !define MUI_UNICON "hw-logo.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "hw-banner.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "hw-banner.bmp"
 !define PROGRAM_NAME "{NAME}"
 !define PROGRAM_VERSION "{VERSION}"
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
@@ -103,7 +105,7 @@ FunctionEnd
       '"$INSTDIR\nssm.exe" status "${PROGRAM_NAME}Service"'
     Pop $0
     Pop $1
-    
+
     ${If} $0 != 3 ; If service exists (is not "not found")
       DetailPrint '$1'
       ; Check if service is running (status == 0)
