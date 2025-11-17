@@ -24,6 +24,11 @@ class __NsisPackager():
         installed_binary = self.args.output_dir / self.args.binary_name
         installed_binary.chmod(0o755)
 
+        shutil.copy(src=self.args.binary_path.parent / 'nssm.exe',
+                    dst=self.args.output_dir)
+        installed_nssm_binary = self.args.output_dir / 'nssm.exe'
+        installed_nssm_binary.chmod(0o755)
+
         openssl_dir = self.args.binary_path.parent / 'openssl'
         installed_openssl = self.args.output_dir / 'openssl'
         shutil.copytree(src=openssl_dir, dst=installed_openssl,
