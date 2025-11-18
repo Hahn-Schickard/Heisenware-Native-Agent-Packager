@@ -104,12 +104,15 @@ FunctionEnd
     nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
       '"$INSTDIR\nssm.exe" status "${PROGRAM_NAME}Service"'
     Pop $0
-    Pop $1
 
-    ${If} $0 != 3 ; If service exists (is not "not found")
-      DetailPrint '$1'
-      ; Check if service is running (status == 0)
-      ${If} $0 == 0
+    ${If} $0 == 0 ; If service exists (is not "not found")
+      nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+      '"$INSTDIR\nssm.exe" statuscode "${PROGRAM_NAME}Service"'
+      Pop $0
+      Pop $1
+      DetailPrint "$1"
+      ; Check if service is running (status == 4)
+      ${If} $0 == 4
         ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
           nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
             '"$INSTDIR\nssm.exe" stop "${PROGRAM_NAME}Service"'
