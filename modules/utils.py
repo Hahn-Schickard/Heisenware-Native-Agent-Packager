@@ -26,7 +26,9 @@ def read_file_content(path: Path):
     return content
 
 
-def write_file_content(path: Path, content: str, mode=0o744):
+def write_file_content(path: Path, content: str, mode=0o744, nsis_escape=False):
+    if nsis_escape: 
+        content = content.replace(r'\'',r'$\'')
     with open(file=path, mode='w', encoding='utf-8') as file:
         file.write(content)
     path.chmod(mode)

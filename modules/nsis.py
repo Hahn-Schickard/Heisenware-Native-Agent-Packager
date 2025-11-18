@@ -54,7 +54,7 @@ class __NsisPackager():
         content = content.replace(
             '{HEISENWARE_AGENT_BINARY}', self.args.binary_name)
 
-        utils.write_file_content(installer_file, content)
+        utils.write_file_content(installer_file, content, nsis_escape=True)
 
     def build(self):
         nsis_found = subprocess.run(
