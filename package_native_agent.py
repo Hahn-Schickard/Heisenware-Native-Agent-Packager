@@ -70,7 +70,7 @@ if __name__ == '__main__':
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
     this_dir = Path(Path(__file__).absolute()).parent
 
-    input_file = Path(args.input_file)
+    input_file = Path(args.input_file).expanduser()
     if not input_file.is_file():
         print(f'Given input file {input_file} does not exist', file=sys.stderr)
         sys.exit(1)
