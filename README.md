@@ -86,7 +86,8 @@ Generated package usage (installation, update and removal) has been manually tes
  * debian trixie
  * ubuntu 24.04
  * fedora 43
- * windows 11 Version 10.0.26100 Build 26100
+ * windows 11 Enterprise Version 24H2 Build 26100.7171
+ * Windows 10 Enterprise LTSC Version 21H2 Build 19044.6575
 
 ## Project structure
 
