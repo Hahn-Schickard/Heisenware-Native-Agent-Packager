@@ -42,6 +42,19 @@ systemctl enable --now {NAME}.service >/dev/null 2>&1 || :
 systemctl stop {NAME}.service || :
 
 %postun
+if [ $1 -eq 0 ]; # if $1 == 0, perform full uninstall
+then
+    if [ -d "/var/lib/heisenware/{NAME}" ];
+    then
+        echo "purging /var/lib/heisenware/{NAME} directory"
+        rm -rf /var/lib/heisenware/{NAME}
+    fi
+    if [ -z "$(ls -A '/var/lib/heisenware')" ]; 
+    then
+        echo "postrm purging /var/lib/heisenware directory"
+        rm -rf /var/lib/heisenware
+    fi
+fi
 systemctl daemon-reload
 
 %files

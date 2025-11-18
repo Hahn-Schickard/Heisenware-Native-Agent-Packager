@@ -1,6 +1,22 @@
 #!/bin/sh
 set -e
 
+# /bin/sh does not have case fallthrough, hence the doubled case
+case "$1" in
+    purge)
+        if [ -d "/var/lib/heisenware/{SERVICE_NAME}" ];
+        then
+            echo "postrm purging /var/lib/heisenware/{SERVICE_NAME} directory"
+            rm -rf /var/lib/heisenware/{SERVICE_NAME}
+        fi
+        if [ -z "$(ls -A '/var/lib/heisenware')" ]; 
+        then
+            echo "postrm purging /var/lib/heisenware directory"
+            rm -rf /var/lib/heisenware
+        fi
+    ;;
+esac
+
 case "$1" in
     remove|upgrade|failed-upgrade|abort-install|abort-upgrade|purge)
         if deb-systemd-helper --quiet was-enabled '{SERVICE_NAME}.service';
