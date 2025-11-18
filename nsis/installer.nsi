@@ -118,7 +118,13 @@ FunctionEnd
             '"$INSTDIR\nssm.exe" stop "${PROGRAM_NAME}Service"'
           Pop $0
           Pop $1
-          DetailPrint "$1"
+          ${If} $0 == "timeout"
+              DetailPrint "NSSM timed-out while stopping ${PROGRAM_NAME}Service. Killing it manually"
+              nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \ 
+                "taskkill.exe /F /T /IM nssm.exe"
+          ${Else}
+              DetailPrint "$1"
+          ${EndIf}
         ${Else}
           Abort "Keeping old files and aborting installation"
         ${EndIf}
