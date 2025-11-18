@@ -156,11 +156,17 @@ FunctionEnd
 
 !macro AbortOnError AbortMsg SuccessMsg
   Pop $0
-  ${If} $0 != "0"
-    Pop $1
-    MessageBox MB_OK "${AbortMsg}$\r$\nExit code: $0$\r$\nError: $1"
-    Call RemoveInstalled
-    Abort "${AbortMsg}"
+  ${If} $0 == "1"
+    Sleep 3000 ; initial start can take some time, so we check again
+    nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+      '"$INSTDIR\nssm.exe" status "${PROGRAM_NAME}Service"'
+    Pop $0
+    ${If} $0 != "0"
+      Pop $1
+      MessageBox MB_OK "${AbortMsg}$\r$\nExit code: $0$\r$\nError: $1"
+      Call RemoveInstalled
+      Abort "${AbortMsg}"
+    ${EndIf}
   ${Else}
     DetailPrint "${SuccessMsg}"
   ${EndIf}
