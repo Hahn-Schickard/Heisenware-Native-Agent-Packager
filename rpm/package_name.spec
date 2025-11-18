@@ -13,7 +13,8 @@ Packager:   Burkhard Heisen <burkhard.heisenware@heisenware.com>
 %define _unitdir /usr/lib/systemd/system
 
 %description
-{SYNOPSIS} {DESCRIPTION}
+{SYNOPSIS}
+{DESCRIPTION}
 
 %prep
 # binary package, no sources
