@@ -80,7 +80,7 @@ if __name__ == '__main__':
     arch_sanitized = arch.replace('_debian', '').replace(
         '_fedora', '').replace('_windows', '')
     packager = PackagerArgs(this_dir,
-                            Path(args.output_dir),
+                            Path(args.output_dir).expanduser(),
                             package_name,
                             input_file,
                             args.version,
