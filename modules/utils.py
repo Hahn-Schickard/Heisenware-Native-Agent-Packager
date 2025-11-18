@@ -40,6 +40,13 @@ def update_script(script_file: Path, service_name: str):
     write_file_content(script_file, content, mode=0o755)
 
 
+def get_directory_size(directory: Path):
+    size = 0
+    for f in directory.rglob('*'):
+        if f.is_file():
+            size += f.stat().st_size
+    return size
+
 class PackagerArgs:
     def __init__(self,
                  packager_dir: Path,

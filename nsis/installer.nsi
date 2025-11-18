@@ -40,22 +40,6 @@ Function InstallHeader
     "Your files are currently being installed"
 FunctionEnd
 
-Function .onInit
-    ReadRegStr $PrevVersion HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion"
-    ${IfNot} ${Errors}
-        ${If} $PrevVersion == ""
-            StrCpy $0 "It seems ${PROGRAM_NAME} is already installed. Do you want to re-install version ${PROGRAM_VERSION}?"
-        ${ElseIf} $PrevVersion == ${PROGRAM_VERSION}
-            StrCpy $0 "It seems ${PROGRAM_NAME} $PrevVersion is already installed. Do you want to re-install it?"
-        ${Else}
-            StrCpy $0 "It seems ${PROGRAM_NAME} is already installed at version $PrevVersion. Do you want to update to ${PROGRAM_VERSION}?"
-        ${EndIf}
-        ${If} ${Cmd} `MessageBox MB_YESNO|MB_ICONQUESTION "$0" /SD IDYES IDNO`
-            Abort
-        ${EndIf}
-    ${EndIf}
-FunctionEnd
-
 Function isInRoot
   DetailPrint "Checking if installation path is inside disk root"
     ; get disk root path
@@ -280,7 +264,7 @@ Section "Directory"
 SetOutPath "$INSTDIR"
 SectionEnd
 
-Section "Install"
+Section "Install" InstSection
   ${If} $PrevVersion == ""
     DetailPrint "Performing a fresh installation"
     Call CleanInstall
@@ -293,3 +277,20 @@ SectionEnd
 Section "Uninstall"
   Call un.RemoveInstalled
 SectionEnd
+
+Function .onInit
+    ReadRegStr $PrevVersion HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion"
+    ${IfNot} ${Errors}
+        ${If} $PrevVersion == ""
+            StrCpy $0 "It seems ${PROGRAM_NAME} is already installed. Do you want to re-install version ${PROGRAM_VERSION}?"
+        ${ElseIf} $PrevVersion == ${PROGRAM_VERSION}
+            StrCpy $0 "It seems ${PROGRAM_NAME} $PrevVersion is already installed. Do you want to re-install it?"
+        ${Else}
+            StrCpy $0 "It seems ${PROGRAM_NAME} is already installed at version $PrevVersion. Do you want to update to ${PROGRAM_VERSION}?"
+        ${EndIf}
+        ${If} ${Cmd} `MessageBox MB_YESNO|MB_ICONQUESTION "$0" /SD IDYES IDNO`
+            Abort
+        ${EndIf}
+    ${EndIf}
+    SectionSetSize ${InstSection} "{REQUIRED_SPACE}"
+FunctionEnd
