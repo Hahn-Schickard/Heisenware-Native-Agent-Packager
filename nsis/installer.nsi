@@ -185,7 +185,10 @@ Function InstallService
   nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
     '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Description "{DESCRIPTION}"'
 
-  ; Set Start type (2 = SERVICE_AUTO_START)
+  ; Set Service Work directory
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppDirectory "$INSTDIR"'
+
   nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
     '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Start SERVICE_AUTO_START'
 
