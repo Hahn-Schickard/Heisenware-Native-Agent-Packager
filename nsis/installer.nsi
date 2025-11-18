@@ -191,8 +191,15 @@ Function InstallService
 
   nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
     '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Start SERVICE_AUTO_START'
+    
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Type SERVICE_WIN32_OWN_PROCESS'
 
-  ; Set restart policy (matches your original 10000ms delay)
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" ObjectName LocalSystem'
+
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppExit Default Restart'
   nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
     '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRestartDelay 10000'
   DetailPrint "${PROGRAM_NAME}Service restart policy configured"
