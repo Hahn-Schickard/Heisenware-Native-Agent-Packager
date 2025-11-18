@@ -181,10 +181,6 @@ Function InstallService
     "Failed to install ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service Installed"
 
-  ; Set Service Display Name (the "Name" column in services.msc)
-  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
-    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" DisplayName "{SYNOPSIS}"'
-
   ; Set Service Description (the "Description" column in services.msc)
   nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
     '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" Description "{DESCRIPTION}"'
