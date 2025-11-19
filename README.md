@@ -25,8 +25,10 @@ This project provides utility tools to create various packages and installers fo
     * Checks if chosen installation path is not in disk root or blacklisted folders
     * Installs a windows service that:
         * Starts automatically on system startup
+        * Starts automatically after installation
         * Restarts 10s after failure
         * Logs `StdOut` and `StdErr` to `${INSTDIR}/logs/service.log`
+            * Take note, `service.log` is not rotated, or overridden on service restart
     * Creates an uninstaller that:
         * Checks if a service is running and asks for user consent to stop it, before continuing
         * Removes installed service
