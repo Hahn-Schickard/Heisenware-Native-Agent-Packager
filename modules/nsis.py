@@ -60,7 +60,7 @@ class __NsisPackager():
             '{HEISENWARE_AGENT_BINARY}', self.args.binary_name)
         
         content = content.replace(
-            '{REQUIRED_SPACE}', str(self.required_space))
+            '{REQUIRED_SPACE}', str(round(self.required_space)))
 
         utils.write_file_content(installer_file, content, nsis_escape=True)
 
