@@ -70,7 +70,7 @@ if __name__ == '__main__':
     package_name = f'heisenware-{args.agent_id}-{args.account_name}-{args.workspace_name}'
     this_dir = Path(Path(__file__).absolute()).parent
 
-    input_file = Path(args.input_file)
+    input_file = Path(args.input_file).expanduser()
     if not input_file.is_file():
         print(f'Given input file {input_file} does not exist', file=sys.stderr)
         sys.exit(1)
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     arch_sanitized = arch.replace('_debian', '').replace(
         '_fedora', '').replace('_windows', '')
     packager = PackagerArgs(this_dir,
-                            Path(args.output_dir),
+                            Path(args.output_dir).expanduser(),
                             package_name,
                             input_file,
                             args.version,
@@ -95,6 +95,12 @@ if __name__ == '__main__':
             openssl_dir = input_file.parent / 'openssl'
             if not openssl_dir.is_dir():
                 print(f'Expected Openssl directory in {openssl_dir},'
+                      ' but it does not exists', file=sys.stderr)
+                sys.exit(1)
+            
+            nssm_binary = input_file.parent / 'nssm.exe'
+            if not nssm_binary.exists():
+                print(f'Expected NSSM executable in {openssl_dir},'
                       ' but it does not exists', file=sys.stderr)
                 sys.exit(1)
             nsis.make(packager)

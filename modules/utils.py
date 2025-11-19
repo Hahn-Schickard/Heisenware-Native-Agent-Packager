@@ -26,7 +26,9 @@ def read_file_content(path: Path):
     return content
 
 
-def write_file_content(path: Path, content: str, mode=0o744):
+def write_file_content(path: Path, content: str, mode=0o744, nsis_escape=False):
+    if nsis_escape: 
+        content = content.replace(r'\'',r'$\'')
     with open(file=path, mode='w', encoding='utf-8') as file:
         file.write(content)
     path.chmod(mode)
@@ -37,6 +39,13 @@ def update_script(script_file: Path, service_name: str):
     content = content.replace('{SERVICE_NAME}', service_name)
     write_file_content(script_file, content, mode=0o755)
 
+
+def get_directory_size(directory: Path):
+    size = 0
+    for f in directory.rglob('*'):
+        if f.is_file():
+            size += f.stat().st_size
+    return size
 
 class PackagerArgs:
     def __init__(self,

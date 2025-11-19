@@ -1,5 +1,119 @@
- Placeholder text for commercial license that forbids further 
- redistribution of the packaged binary data. 
- 
- Simulate multiline License text, to check how copyright file 
- will be formatted.
+End User License Agreement (EULA) for Heisenware Native Agent This End User
+License Agreement ("EULA") is a binding legal agreement between you ("Licensee"
+or "You") and Heisenware GmbH, Levisohnweg 3, 22081 Hamburg, Germany ("Licensor"
+or "Heisenware").
+
+This EULA governs your use of the Heisenware Native Agent software and any
+associated documentation, updates, or new versions (collectively, the
+"Software").
+
+By clicking the "I Agree" button, installing, or otherwise using the Software,
+you agree to be bound by all terms and conditions of this EULA. If you do not
+agree to these terms, do not click "I Agree" and do not install or use the
+Software.
+
+1. License Grant Subject to your compliance with this EULA and your maintenance
+of an active SaaS subscription (the "Service") with Heisenware, Heisenware
+grants you a limited, non-exclusive, non-transferable, and non-sublicensable
+license to:
+
+Install and use the Software on computers ("Permitted Devices") within your
+control and owned or operated by you or your organization.
+
+Use the Software solely for its intended purpose, which is to bridge traffic
+from your private network to your cloud account as part of the Heisenware
+Service.
+
+Make a reasonable number of copies of the Software for backup or archival
+purposes, provided such copies are used only by you or your organization in
+connection with the Service.
+
+This license is granted solely for the computer(s) on which the Software is
+installed and is contingent upon your active subscription to the Service.
+
+2. License Restrictions You agree that you will not, and will not permit any
+third party to:
+
+Reverse engineer, decompile, disassemble, or otherwise attempt to discover the
+source code, object code, or underlying algorithms of the Software.
+
+Modify, translate, adapt, or create derivative works based on the Software.
+
+Rent, lease, lend, sell, sublicense, assign, distribute, publish, or otherwise
+transfer the Software or any of your rights under this EULA to any other person
+or entity.
+
+Remove, alter, or obscure any proprietary notices (including copyright and
+trademark notices) on the Software.
+
+Use the Software for any purpose other than its intended purpose as part of the
+Service.
+
+3. Updates, Maintenance, and Support Updates: This license includes any updates,
+upgrades, or new versions of the Software that Heisenware may, at its sole
+discretion, provide. All such updates shall be deemed part of the Software and
+subject to the terms of this EULA.
+
+Support: Support services for the Software are provided in accordance with the
+terms of your active SaaS subscription. Support is limited to addressing
+critical, "show-stopper" issues that prevent the Software's core functionality.
+Heisenware is not obligated to provide any other maintenance or support.
+
+4. Payment and Subscription The license to use the Software is provided as part
+of your SaaS subscription to the Service. Your right to use the Software is
+contingent upon your timely payment of all fees associated with that
+subscription. If your SaaS subscription is suspended, expires, or is terminated,
+your license to use the Software automatically terminates. All matters related
+to payments and refunds are governed by the terms of your SaaS subscription
+agreement.
+
+5. Intellectual Property and Ownership Heisenware retains all right, title, and
+interest in and to the Software, including all copyrights, patents, trade
+secrets, trademarks, and other intellectual property rights. This EULA grants
+you a limited license to use the Software and does not transfer any ownership
+rights to you. You acquire no rights to the Software other than those expressly
+granted by this EULA.
+
+6. Warranty Disclaimer THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITH
+ALL FAULTS AND WITHOUT WARRANTY OF ANY KIND. TO THE MAXIMUM EXTENT PERMITTED BY
+APPLICABLE LAW, HEISENWARE EXPRESSLY DISCLAIMS ALL WARRANTIES AND CONDITIONS,
+WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING, BUT NOT LIMITED
+TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+AND NON-INFRINGEMENT. HEISENWARE DOES NOT WARRANT THAT THE SOFTWARE WILL MEET
+YOUR REQUIREMENTS, BE ERROR-FREE, OR OPERATE WITHOUT INTERRUPTION.
+
+7. Limitation of Liability TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN
+NO EVENT SHALL HEISENWARE, ITS DIRECTORS, EMPLOYEES, OR SUPPLIERS BE LIABLE FOR
+ANY INDIRECT, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES WHATSOEVER
+(INCLUDING, BUT NOT LIMITED TO, DAMAGES FOR LOSS OF PROFITS, LOSS OF DATA,
+BUSINESS INTERRUPTION, OR PERSONAL INJURY) ARISING OUT OF OR IN ANY WAY RELATED
+TO THE USE OF OR INABILITY TO USE THE SOFTWARE, HOWEVER CAUSED, REGARDLESS OF
+THE THEORY OF LIABILITY (CONTRACT, TORT, OR OTHERWISE), EVEN IF HEISENWARE HAS
+BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+THIS LIMITATION SHALL NOT APPLY TO LIABILITY CAUSED BY HEISENWARE'S GROSS
+NEGLIGENCE OR WILLFUL MISCONDUCT, OR FOR DEATH OR PERSONAL INJURY, TO THE EXTENT
+SUCH A LIMITATION IS PROHIBITED BY APPLICABLE LAW.
+
+8. Termination This EULA is effective until terminated. Your rights under this
+license will terminate automatically without notice from Heisenware if you
+violate any of its terms or if your associated SaaS subscription terminates.
+
+Upon termination of this EULA for any reason, you must cease all use of the
+Software and immediately uninstall and destroy all copies, full or partial, of
+the Software in your possession or control.
+
+9. Legal and Compliance Governing Law: This EULA and any dispute arising out of
+it shall be governed by and construed in accordance with the laws of Germany,
+excluding its conflict of law principles. The exclusive jurisdiction and venue
+for any action shall be the courts located in Hamburg, Germany.
+
+Data Protection: Heisenware is committed to GDPR compliance. Any personal data
+collected or processed through your use of the Software and the Service is
+subject to Heisenware's Privacy Policy (available on the Heisenware website),
+which is incorporated herein by reference.
+
+Entire Agreement: This EULA, together with your SaaS subscription agreement and
+the Heisenware Privacy Policy, constitutes the entire agreement between you and
+Heisenware concerning the Software and supersedes all prior or contemporaneous
+communications.

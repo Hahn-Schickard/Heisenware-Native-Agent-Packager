@@ -7,6 +7,7 @@ class __NsisPackager():
     def __init__(self,
                  args: utils.PackagerArgs):
         self.args = args
+        self.required_space = 0
 
     def setup_workplace(self):
         template_dir = self.args.packager_dir / 'nsis'
@@ -23,12 +24,21 @@ class __NsisPackager():
         shutil.copy(src=self.args.binary_path, dst=self.args.output_dir)
         installed_binary = self.args.output_dir / self.args.binary_name
         installed_binary.chmod(0o755)
+        self.required_space = installed_binary.stat().st_size
+
+        shutil.copy(src=self.args.binary_path.parent / 'nssm.exe',
+                    dst=self.args.output_dir)
+        installed_nssm_binary = self.args.output_dir / 'nssm.exe'
+        installed_nssm_binary.chmod(0o755)
+        self.required_space = self.required_space + installed_nssm_binary.stat().st_size
 
         openssl_dir = self.args.binary_path.parent / 'openssl'
         installed_openssl = self.args.output_dir / 'openssl'
         shutil.copytree(src=openssl_dir, dst=installed_openssl,
                         dirs_exist_ok=True)
         installed_openssl.chmod(0o755)
+        self.required_space = self.required_space + utils.get_directory_size(installed_openssl)
+        self.required_space = self.required_space / 1024 # convert to KB
 
     def add_license(self):
         shutil.copy(src=self.args.license_file, dst=self.args.output_dir)
@@ -48,8 +58,11 @@ class __NsisPackager():
 
         content = content.replace(
             '{HEISENWARE_AGENT_BINARY}', self.args.binary_name)
+        
+        content = content.replace(
+            '{REQUIRED_SPACE}', str(round(self.required_space)))
 
-        utils.write_file_content(installer_file, content)
+        utils.write_file_content(installer_file, content, nsis_escape=True)
 
     def build(self):
         nsis_found = subprocess.run(

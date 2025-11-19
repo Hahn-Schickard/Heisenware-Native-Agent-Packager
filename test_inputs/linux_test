@@ -1,5 +1,19 @@
 #!/bin/bash
 
+# emulate startup taking some time
+sleep 1
+
+# emulate using the work directory
+if [ ! -f .hw-agent-id ]; then
+    echo "some id" > .hw-agent-id 
+fi
+
+if [ ! -f .hw-cache ]; then
+    mkdir .hw-cache
+    echo "some cache data" > .hw-cache/cacheFile1
+fi
+
+# emulate sending messages
 while true; do
     echo "Simulate a process message"
     sleep 1

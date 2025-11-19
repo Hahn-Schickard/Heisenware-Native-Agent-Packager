@@ -4,6 +4,7 @@ This project provides utility tools to create various packages and installers fo
 ## Features
  * Generates `.deb` packages with:
     * Daemon service that:
+        * Has it's own working directory in `/var/lib/heisenware/{SERVICE_NAME}`
         * Starts automatically on system startup
         * Restarts 5s after service failure
         * Saves called service binary output in `journal`
@@ -21,10 +22,14 @@ This project provides utility tools to create various packages and installers fo
  * Generates Windows installer wizards that:
     * Checks if a previous installation exists
     * Allows the user to select the install location
+    * Checks if chosen installation path is not in disk root or blacklisted folders
     * Installs a windows service that:
+        * Has it's own working directory in `${INSTDIR}`
         * Starts automatically on system startup
+        * Starts automatically after installation
         * Restarts 10s after failure
-        * Restarts 1 minutes after the first restart attempt failure
+        * Logs `StdOut` and `StdErr` to `${INSTDIR}/logs/service.log`
+            * Take note, `service.log` is not rotated, or overridden on service restart
     * Creates an uninstaller that:
         * Checks if a service is running and asks for user consent to stop it, before continuing
         * Removes installed service
@@ -40,15 +45,11 @@ This project provides utility tools to create various packages and installers fo
  * python >3.9 - used to execute package generation scripts
  * [dpkg](https://tracker.debian.org/pkg/dpkg) - used to build .deb packages (not necessary, if you don't plan to build dpkg packages)
  * [NSIS](https://nsis.sourceforge.io/Main_Page) - Nullsoft Scriptable Install System, used to create windows installer wizard (not necessary, if you don't plan to build windows installers)
-    * [NSIS Simple Service Plugin](https://nsis.sourceforge.io/NSIS_Simple_Service_Plugin) - use to generate windows service installation scripts
 
 To install all of the above mentioned requirements, please use the following commands:
 
 ```bash
 sudo apt install dpkg nsis python3 unzip wget rpm -y
-wget -O NSIS_Simple_Service.zip https://nsis.sourceforge.io/mediawiki/images/e/ef/NSIS_Simple_Service_Plugin_Unicode_1.30.zip
-unzip -d nsis_service NSIS_Simple_Service.zip && rm NSIS_Simple_Service.zip
-sudo mv nsis_service/SimpleSC.dll /usr/share/nsis/Plugins/x86-unicode/ && rm -rf nsis_service
 ```
 
 ## Usage
@@ -85,10 +86,13 @@ Package generation has been manually tested with appropriate `test_inputs` files
  * ubuntu 24.04
 
 Generated package usage (installation, update and removal) has been manually tested on the following systems: 
- * debian trixie
- * ubuntu 24.04
- * fedora 43
- * windows 11 Version 10.0.26100 Build 26100
+ * amd64 debian trixie
+ * arm64 debian trixie (Raspberry Pi 4B+)
+ * arm64 debian trixie (Raspberry Pi 5)
+ * amd64 ubuntu 24.04
+ * amd64 fedora 43
+ * amd64 windows 11 Enterprise Version 24H2 Build 26100.7171
+ * amd64 Windows 10 Enterprise LTSC Version 21H2 Build 19044.6575
 
 ## Project structure
 

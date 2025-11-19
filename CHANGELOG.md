@@ -1,4 +1,40 @@
 # Changelog
+## [0.3.0] - 2025.11.19
+### Fixed
+ - Windows installer not removing `INSTDIR`
+ - `package_native_agent.py` not expanding `~` to user directory in 
+ `--input_file` and `--output_dir` arguments
+ - Windows installer not setting expected space requirement
+
+### Removed
+ - NSIS Simple Service Plugin
+
+### Changed
+ - `shared/general/LICENSE` to hold correct license information
+ - `shared/general/description` static file to hold updated description
+ - `shared/linux/daemon.service` to create and use a custom work directory
+ - `test_inputs/linux_test` script to create `.hw-agent-id` and 
+ `.hw-cache/cacheFile1` to simulate heisenware native agent creating files 
+ inside it's work directory
+ - `package_native_agent.py` to check if `nssm.exe` exists in input directory
+ when `--target_system=Amd64_Windows`
+ - `modules/nsis.py` to copy `nssm.exe` into package directory
+ - `nsis/installer.nsi` to use `nssm.exe` for service management
+ - `nsis/installer.nsi` to check for invalid installation path 
+ - `test_inputs/windows_test.exe` into `test_inputs/windows_test.bat` that creates
+ `.hw-agent-id` and `.hw-cache/cacheFile1` files to simulate heisenware native 
+ agent creating files inside it's work directory
+ - `postrm` scripts for dpkg and rpm to remove `/var/lib/heisenware/{SERVICE_NAME}` 
+ directory on purge
+ - `postrm` scripts for dpkg and rpm to remove `/var/lib/heisenware` directory on 
+ purge if there are no more services installed
+
+### Added
+ - `nssm.exe` to `test_inputs`
+ - `hw-banner.bmp` to `nsis`
+ - attribution to NSSM creator in `NOTICE` file
+ - Finish pages to windows (un)installer 
+
 ## [0.2.0] - 2025.11.03
 ### Fixed
  - Daemon service not being enabled for Ubuntu systems

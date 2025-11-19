@@ -2,12 +2,25 @@ Unicode True
 
 !include MUI2.nsh
 !include LogicLib.nsh
+!include StrFunc.nsh
+
+${StrTrimNewLines} ; enable StrTrimNewLines
+${UnStrTrimNewLines} ; enable uninstaller version of StrTrimNewLines
 
 !define MUI_ICON "hw-logo.ico"
 !define MUI_UNICON "hw-logo.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "hw-banner.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "hw-banner.bmp"
+!define MUI_WELCOMEPAGE_TITLE "Welcome to {SYNOPSIS} Installer Wizard"
+!define MUI_FINISHPAGE_TITLE "{SYNOPSIS} Installed"
+!define MUI_UNFINISHPAGE_TITLE "{SYNOPSIS} Removed"
+!define MUI_FINISHPAGE_NOAUTOCLOSE
+!define MUI_UNFINISHPAGE_NOAUTOCLOSE
+
 !define PROGRAM_NAME "{NAME}"
 !define PROGRAM_VERSION "{VERSION}"
 !define UNINSTALL_REG_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PROGRAM_NAME}"
+!define EXEC_TIMEOUT "10000" ; measured in ms
 
 Name "{SYNOPSIS} Installer Wizard"
 OutFile "..\{NAME}_installer.exe"
@@ -16,33 +29,27 @@ InstallDirRegKey HKLM "${UNINSTALL_REG_KEY}" InstallLocation
 RequestExecutionLevel admin
 
 !insertmacro MUI_PAGE_WELCOME
+!define MUI_PAGE_HEADER_TEXT "Please review the license terms before installing {SYNOPSIS}"
 !insertmacro MUI_PAGE_LICENSE "LICENSE"
+!define MUI_PAGE_HEADER_TEXT "Choose the folder in which to install {SYNOPSIS}"
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+!define MUI_WELCOMEPAGE_TITLE "Welcome to {SYNOPSIS} Uninstaller Wizard"
+!insertmacro MUI_UNPAGE_WELCOME
 !insertmacro MUI_UNPAGE_CONFIRM
 !insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
+
 !insertmacro MUI_LANGUAGE "English"
 
 Var PrevVersion
 
-Page Directory DirectoryHeader
-Page InstFiles InstallHeader
-
-Function DirectoryHeader
-  !insertmacro MUI_HEADER_TEXT "Installation location" \ 
-    "Please select the location where the files should be installed"
-FunctionEnd
-
-Function InstallHeader
-  !insertmacro MUI_HEADER_TEXT \ 
-    "Installing files" \
-    "Your files are currently being installed"
-FunctionEnd
-
 Function .onInit
     ReadRegStr $PrevVersion HKLM "${UNINSTALL_REG_KEY}" "DisplayVersion"
     ${IfNot} ${Errors}
-        ${If} $PrevVersion == ""
-            StrCpy $0 "It seems ${PROGRAM_NAME} is already installed. Do you want to re-install version ${PROGRAM_VERSION}?"
-        ${ElseIf} $PrevVersion == ${PROGRAM_VERSION}
+        ${If} $PrevVersion == ${PROGRAM_VERSION}
             StrCpy $0 "It seems ${PROGRAM_NAME} $PrevVersion is already installed. Do you want to re-install it?"
         ${Else}
             StrCpy $0 "It seems ${PROGRAM_NAME} is already installed at version $PrevVersion. Do you want to update to ${PROGRAM_VERSION}?"
@@ -51,6 +58,39 @@ Function .onInit
             Abort
         ${EndIf}
     ${EndIf}
+FunctionEnd
+
+Function isInRoot
+  DetailPrint "Checking if installation path is inside disk root"
+    ; get disk root path
+  StrCpy $R0 $INSTDIR 3
+
+  ; check if disk root matches INSTDIR
+  StrCmp $R0 "$INSTDIR" 0 +2
+    Abort "Installing in disk root is not allowed. Please create a new folder inside $R0"
+FunctionEnd
+
+!macro checkInstPath Path
+  StrCmp $INSTDIR "${Path}" 0 +3
+    MessageBox MB_OK "Installing in ${Path} is not allowed! Please create a new folder inside"
+    Abort "Installing in ${Path} is not allowed!"
+!macroend
+
+Function isInBadPath
+  DetailPrint "Checking if installation path is inside a blacklisted path"
+
+  ; NSIS does not have arrays, and using StrTok is clumsy and unreliable
+  !insertmacro checkInstPath "$SYSDIR"
+  !insertmacro checkInstPath "$WINDIR"
+  !insertmacro checkInstPath "$PROGRAMFILES"
+  !insertmacro checkInstPath "$PROGRAMFILES64"
+  !insertmacro checkInstPath "$DESKTOP"
+  !insertmacro checkInstPath "$DOCUMENTS"
+  !insertmacro checkInstPath "$MUSIC"
+  !insertmacro checkInstPath "$PICTURES"
+  !insertmacro checkInstPath "$VIDEOS"
+  !insertmacro checkInstPath "$APPDATA"
+  !insertmacro checkInstPath "$LOCALAPPDATA"
 FunctionEnd
 
 Function SetRegistryKeys
@@ -62,37 +102,83 @@ FunctionEnd
 
 !macro makeRemoveService un
   Function ${un}RemoveService
-    SimpleSC::ExistsService "${PROGRAM_NAME}Service"
+    DetailPrint "Stopping and removing ${PROGRAM_NAME}Service"
+    DetailPrint "Calling nssm.exe status ${PROGRAM_NAME}Service"
+    ; Use nssm status to check service state
+    nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+      '"$INSTDIR\nssm.exe" status ${PROGRAM_NAME}Service'
     Pop $0
-    ${If} $0 == "0"
-      SimpleSC::ServiceIsRunning "${PROGRAM_NAME}Service"
+    Pop $1
+
+    !ifdef __UNINSTALL__
+        ${UnStrTrimNewLines} $1 $1
+    !else
+        ${StrTrimNewLines} $1 $1
+    !endif
+
+    ${If} $1 S== "SERVICE_RUNNING"
+      DetailPrint "Requesting stop confirmation"
+      ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
+        nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+          '"$INSTDIR\nssm.exe" stop ${PROGRAM_NAME}Service'
+        Pop $0
+        Pop $1
+        ${If} $0 S== "timeout"
+            DetailPrint "NSSM timed-out while stopping ${PROGRAM_NAME}Service. Killing it manually"
+            nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \ 
+              "taskkill.exe /F /T /IM nssm.exe"
+        ${Else}
+            DetailPrint "Service stopped: $1"
+        ${EndIf}
+      ${Else}
+        Abort "Keeping old files and aborting installation"
+      ${EndIf}
+      
+      ; Remove the service
+      nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+        '"$INSTDIR\nssm.exe" remove ${PROGRAM_NAME}Service confirm'
       Pop $0
       Pop $1
-      ${If} "$0$1" == "01"
-        ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
-          SimpleSC::StopService "${PROGRAM_NAME}Service" 1 60
-          DetailPrint "${PROGRAM_NAME}Service stopped"
-        ${Else}
-          Abort "Keeping old files and aborting installation"
-        ${EndIf}
-      ${EndIf}
-      SimpleSC::RemoveService "${PROGRAM_NAME}Service"
-      DetailPrint "${PROGRAM_NAME}Service removed"
+      DetailPrint "Service removed: $1"
     ${EndIf}
   FunctionEnd
 !macroend
 
-!insertmacro makeRemoveService "" 
+!insertmacro makeRemoveService ""
 !insertmacro makeRemoveService "un."
+
+!macro makeRemoveInstalled un
+  Function ${un}RemoveInstalled
+    Call ${un}RemoveService
+    DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
+    DetailPrint "Removed ${UNINSTALL_REG_KEY} WinRegKey"
+    RmDir /r $INSTDIR\openssl
+    DetailPrint "Removed $INSTDIR\openssl folder"
+    Delete $INSTDIR\nssm.exe
+    DetailPrint "Removed $INSTDIR\nssm.exe"
+    Delete $INSTDIR\uninstaller.exe
+    DetailPrint "Removed $INSTDIR\uninstaller.exe"
+    SetOutPath "$TEMP"
+    RmDir /r $INSTDIR
+    DetailPrint "Removed $INSTDIR directory and it's content"
+  FunctionEnd
+!macroend
+
+!insertmacro makeRemoveInstalled ""
+!insertmacro makeRemoveInstalled "un."
 
 !macro AbortOnError AbortMsg SuccessMsg
   Pop $0
-  ${If} $0 != "0"
-    Push $0
-    SimpleSC::GetErrorMessage
+  ${If} $0 == "1"
+    Sleep 3000 ; initial start can take some time, so we check again
+    nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+      '"$INSTDIR\nssm.exe" status ${PROGRAM_NAME}Service'
     Pop $0
-    ${If} ${Cmd} `MessageBox MB_OK "${AbortMsg}:\r$\n$0" IDOK`
-      Abort "${AbortMsg}: $0"
+    ${If} $0 != "0"
+      Pop $1
+      MessageBox MB_OK "${AbortMsg}$\r$\nExit code: $0$\r$\nError: $1"
+      Call RemoveInstalled
+      Abort "${AbortMsg}"
     ${EndIf}
   ${Else}
     DetailPrint "${SuccessMsg}"
@@ -100,60 +186,64 @@ FunctionEnd
 !macroend
 
 Function InstallService
-  Call RemoveService
-  SimpleSC::InstallService \
-    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
-    /*Service Display name*/ "{SYNOPSIS} {DESCRIPTION}" \
-    /*Service type, 16 = SERVICE_WIN32_OWN_PROCESS*/ "16" \
-    /*Service start type, 2 = SERVICE_AUTO_START*/ "2" \
-    /*Path to the service binary executable*/ "$INSTDIR\{HEISENWARE_AGENT_BINARY}" \
-    /*Service dependency list*/ "" \
-    /*Executing account name, empty = system account*/ "" \
-    /*Executing account password, empty = system account*/ ""
+  Call RemoveService ; This will remove any old service
+  ; Install the service using nssm
+  nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" install "${PROGRAM_NAME}Service" "$INSTDIR\{HEISENWARE_AGENT_BINARY}"'
   !insertmacro AbortOnError \
     "Failed to install ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service Installed"
 
-  SimpleSC::SetServiceFailure \
-    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
-    /*Reset period*/ "0" \
-    /*Reboot message*/ "Restarting ${PROGRAM_NAME}Service" \
-    /*Command*/"" \
-    /*First action*/"1" \
-    /*First action delay in ms*/"10000" \
-    /*Second action*/"2" \
-    /*Second action delay in ms*/"60000" \
-    /*Third action*/"0" \
-    /*Third action delay in ms*/"0"
-  !insertmacro AbortOnError \
-    "Failed to set restart policy for ${PROGRAM_NAME}Service due to error" \
-    "${PROGRAM_NAME}Service restart policy configured"
-  
-  SimpleSC::StartService \
-    /*Installed Service name*/ "${PROGRAM_NAME}Service" \
-    /*Service input args*/ "" \
-    /*Service start timeout in s*/ 60
+  ; Set Service Description (the "Description" column in services.msc)
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service Description "{DESCRIPTION}"'
+
+  ; Set Service Work directory
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service AppDirectory "$INSTDIR"'
+
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service Start SERVICE_AUTO_START'
+    
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service Type SERVICE_WIN32_OWN_PROCESS'
+
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service ObjectName LocalSystem'
+
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service AppExit Default Restart'
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service AppRestartDelay 10000'
+  DetailPrint "${PROGRAM_NAME}Service restart policy configured"
+
+  ; Set up StdOut and StdError logging
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service AppStdout $INSTDIR\logs\service.log'
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service AppStderr $INSTDIR\logs\service.log'
+  ; Enable log file rotation 
+  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" set ${PROGRAM_NAME}Service AppRotateFiles 1'
+  DetailPrint "${PROGRAM_NAME}Service logging policy configured"
+
+  ; Start the service
+  nsExec::ExecToStack '/TIMEOUT=${EXEC_TIMEOUT}' \
+    '"$INSTDIR\nssm.exe" start ${PROGRAM_NAME}Service'
   !insertmacro AbortOnError \
     "Could not start ${PROGRAM_NAME}Service due to error" \
     "${PROGRAM_NAME}Service started"
 FunctionEnd
 
-!macro makeRemoveInstalled un
-  Function ${un}RemoveInstalled
-    Call ${un}RemoveService
-    DeleteRegKey HKLM "${UNINSTALL_REG_KEY}"
-    DetailPrint "Removed ${UNINSTALL_REG_KEY} WinRegKey"
-    RmDir /r "$INSTDIR"
-    Delete $INSTDIR\uninstaller.exe
-    RmDir $INSTDIR
-    DetailPrint "Removed $INSTDIR directory and it's content"
-  FunctionEnd
-!macroend
-
-!insertmacro makeRemoveInstalled "" 
-!insertmacro makeRemoveInstalled "un."
-
 Function CleanInstall
+  Call isInRoot
+  Call isInBadPath
+
+  ${IfNot} ${FileExists} "$INSTDIR\logs"
+    CreateDirectory "$INSTDIR\logs"
+    DetailPrint "Created $INSTDIR\logs folder"
+  ${EndIf}
+
   ${If} ${FileExists} "$INSTDIR\openssl"
     ${If} ${Cmd} `MessageBox MB_OKCANCEL "$INSTDIR\openssl already exists. Delete it?" IDOK`
       RMDir /r $INSTDIR\openssl
@@ -163,17 +253,18 @@ Function CleanInstall
     ${EndIf}
   ${EndIf}
 
+  ${If} ${FileExists} "$INSTDIR\nssm.exe"
+    Delete "$INSTDIR\nssm.exe"
+    DetailPrint "Deleted original $INSTDIR\nssm.exe"
+  ${EndIf}
+
   File /r openssl
+  File nssm.exe
   File "{HEISENWARE_AGENT_BINARY}"
   SetShellVarContext all
   WriteUninstaller $INSTDIR\uninstaller.exe
   Call InstallService
   Call SetRegistryKeys
-FunctionEnd
-
-Function UpdateInstalled
-  Call RemoveInstalled
-  Call CleanInstall
 FunctionEnd
 
 Section "Directory"
@@ -183,12 +274,15 @@ SetOutPath "$INSTDIR"
 SectionEnd
 
 Section "Install"
+  AddSize {REQUIRED_SPACE}
+
   ${If} $PrevVersion == ""
     DetailPrint "Performing a fresh installation"
     Call CleanInstall
   ${Else}
     DetailPrint "Updating from version $PrevVersion to ${PROGRAM_VERSION}"
-    Call UpdateInstalled
+    Call RemoveInstalled
+    Call CleanInstall
   ${EndIf}
 SectionEnd
 
