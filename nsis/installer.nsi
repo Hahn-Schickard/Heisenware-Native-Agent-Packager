@@ -205,12 +205,6 @@ Function InstallService
   ; Enable log file rotation 
   nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
     '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRotateFiles 1'
-  ; Rotate log files while service is running
-  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
-    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRotateOnline 1'
-  ; Rotate log files when log file is larger than 20 MB
-  nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \
-    '"$INSTDIR\nssm.exe" set "${PROGRAM_NAME}Service" AppRotateBytes 20971520'
   DetailPrint "${PROGRAM_NAME}Service logging policy configured"
 
   ; Start the service
