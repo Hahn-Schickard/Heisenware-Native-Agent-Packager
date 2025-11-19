@@ -1,10 +1,14 @@
 #!/bin/bash
 
-# emulate workdir usage
+# emulate startup taking some time
+sleep 1
+
+# emulate using the work directory
 echo "some id" > .hw-agent-id 
 mkdir .hw-cache
 echo "some cache data" > .hw-cache/cacheFile1
 
+# emulate sending messages
 while true; do
     echo "Simulate a process message"
     sleep 1
