@@ -83,7 +83,7 @@
             "program": "package_native_agent.py",
             "console": "integratedTerminal",
             "args": [
-                "--input_file", "test_inputs/windows_test.exe",
+                "--input_file", "test_inputs/windows_test.bat",
                 "--output_dir", "output",
                 "--target_system", "Amd64_Windows",
                 "--agent_id", "qcrf5",
