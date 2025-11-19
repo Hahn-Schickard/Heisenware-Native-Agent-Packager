@@ -94,7 +94,7 @@ FunctionEnd
       '"$INSTDIR\nssm.exe" statuscode "${PROGRAM_NAME}Service"'
       Pop $0
       Pop $1
-      DetailPrint "$1"
+      DetailPrint "Service status code: $1"
       ; Check if service is running (status == 4)
       ${If} $0 == 4
         ${If} ${Cmd} `MessageBox MB_OKCANCEL "${PROGRAM_NAME}Service is running. Stop and remove it?" IDOK`
@@ -107,7 +107,7 @@ FunctionEnd
               nsExec::Exec '/TIMEOUT=${EXEC_TIMEOUT}' \ 
                 "taskkill.exe /F /T /IM nssm.exe"
           ${Else}
-              DetailPrint "$1"
+              DetailPrint "Service stopped: $1"
           ${EndIf}
         ${Else}
           Abort "Keeping old files and aborting installation"
@@ -119,7 +119,7 @@ FunctionEnd
         '"$INSTDIR\nssm.exe" remove "${PROGRAM_NAME}Service" confirm'
       Pop $0
       Pop $1
-      DetailPrint "$1"
+      DetailPrint "Service removed: $1"
     ${EndIf}
   FunctionEnd
 !macroend
