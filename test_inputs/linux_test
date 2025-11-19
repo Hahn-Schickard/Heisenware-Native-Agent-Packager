@@ -4,9 +4,14 @@
 sleep 1
 
 # emulate using the work directory
-echo "some id" > .hw-agent-id 
-mkdir .hw-cache
-echo "some cache data" > .hw-cache/cacheFile1
+if [ ! -f .hw-agent-id ]; then
+    echo "some id" > .hw-agent-id 
+fi
+
+if [ ! -f .hw-cache ]; then
+    mkdir .hw-cache
+    echo "some cache data" > .hw-cache/cacheFile1
+fi
 
 # emulate sending messages
 while true; do
