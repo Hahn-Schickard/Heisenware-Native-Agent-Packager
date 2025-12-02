@@ -22,7 +22,8 @@ release = '2025'
 extensions = [
     'sphinx_rtd_theme',
     'sphinx.ext.viewcode',
-    'sphinx.ext.autodoc'
+    'sphinx.ext.autodoc',
+    'sphinx.ext.githubpages'
 ]
 
 templates_path = ['_templates']
