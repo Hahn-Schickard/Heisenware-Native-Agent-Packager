@@ -1,3 +1,5 @@
+"""DPKG Package Generator Module for Heisenware Linux Native Agents"""
+
 import shutil
 import subprocess
 from datetime import date
@@ -7,12 +9,28 @@ MAX_SYNOPSIS_LEN = 80
 
 
 class __DpkgPackager():
+    """DPKG Package Builder Class
+    """
+
     def __init__(self,
                  args: utils.PackagerArgs):
         self.args = args
         self.control_dir = self.args.output_dir / 'DEBIAN'
 
     def setup_workplace(self):
+        """Setup a temporary workplace for DPKG package creation
+
+        The workplace will be created in 
+            [OUTPUT_DIR]/[PACKAGE_NAME]_[VERSION]_[ARCH]
+
+        The created workplace directory will contain shared linux general
+        as well as dpkg template files. 
+
+        Sets correct directory and file permissions
+
+        Raises:
+            FileNotFoundError: if template files or output dir does not exist
+        """
         template_dir = self.args.packager_dir / 'dpkg'
         if not template_dir.is_dir():
             raise FileNotFoundError(f'Directory {template_dir} does not exist')
@@ -29,6 +47,11 @@ class __DpkgPackager():
         self.control_dir.chmod(0o755)
 
     def add_binary(self):
+        """Copy the Heisenware Native Agent binary into the package
+
+        Copy the binary into the correct dpkg binary location and set the correct
+        file permissions
+        """
         install_dir = self.args.output_dir / 'usr' / 'bin'
         utils.make_clean_dir(install_dir)
 
@@ -37,6 +60,8 @@ class __DpkgPackager():
         installed_binary.chmod(0o755)
 
     def update_control(self):
+        """Update the dpkg control file with package meta information
+        """
         control_file = self.control_dir / 'control'
         content = utils.read_file_content(control_file)
 
@@ -45,8 +70,6 @@ class __DpkgPackager():
         content = content.replace('{ARCH}', self.args.arch)
 
         synopsis = utils.read_file_content(self.args.synopsis_file)
-        if len(synopsis) > MAX_SYNOPSIS_LEN:
-            raise RuntimeError('Package synopsis is too long')
         content = content.replace('{SYNOPSIS}', synopsis)
 
         description = utils.read_file_content(self.args.description_file)
@@ -55,6 +78,8 @@ class __DpkgPackager():
         utils.write_file_content(control_file, content)
 
     def update_copyright(self):
+        """Update the copyright file with license information
+        """
         copyright_file = self.control_dir / 'copyright'
         content = content = utils.read_file_content(copyright_file)
 
@@ -71,6 +96,11 @@ class __DpkgPackager():
         shutil.move(src=copyright_file, dst=copyright_install_dir)
 
     def update_daemon(self):
+        """Update the systemctl daemon service file
+
+        Set the binary name and path, as well as place the daemon file in the 
+        correct path
+        """
         daemon_template = self.control_dir / 'daemon.service'
         daemon_service = self.control_dir / f'{self.args.package_name}.service'
         daemon_template.rename(daemon_service)
@@ -93,6 +123,11 @@ class __DpkgPackager():
         shutil.move(src=daemon_service, dst=daemon_install_dir)
 
     def update_conffiles(self):
+        """Update configuration file list for dpkg package
+
+        Update the conffile with correct logrotate configuration file name, 
+        set correct file permissions
+        """
         config_file = self.control_dir / 'conffiles'
         content = utils.read_file_content(config_file)
         content = content.replace(
@@ -100,6 +135,11 @@ class __DpkgPackager():
         utils.write_file_content(config_file, content, mode=0o644)
 
     def add_logrotate(self):
+        """Update logrotate configuration file
+
+        Set the logfile name to package name, place the configuration file in the
+        correct path
+        """
         config_file = self.control_dir / 'logrotate.conf'
 
         content = utils.read_file_content(config_file)
@@ -114,6 +154,10 @@ class __DpkgPackager():
         shutil.move(src=config_file, dst=config_install_dir)
 
     def update_scripts(self):
+        """Update dpkg package maintainer scripts
+
+        Set the packagname in Pre/Post-inst and Pre/post-rm maintainer scripts
+        """
         preinst_file = self.control_dir / 'preinst'
         utils.update_script(preinst_file, self.args.package_name)
 
@@ -127,6 +171,13 @@ class __DpkgPackager():
         utils.update_script(postrm_file, self.args.package_name)
 
     def build(self):
+        """Call the dpkg-deb to build the dpkg package
+
+        Remove the temporary workplace directory after successful build
+
+        Raises:
+            FileNotFoundError: if dpkg-deb build tools are not found
+        """
         dpkg_found = subprocess.run(
             ['dpkg-deb', '--version'], capture_output=True, check=False)
         if dpkg_found.returncode != 0:
@@ -141,6 +192,8 @@ class __DpkgPackager():
         shutil.rmtree(self.args.output_dir)
 
     def document(self):
+        """Generate readme documentation for package (un)installation
+        """
         readme = self.args.output_dir.parent / 'README'
         content = 'Run the following command to install the package:\n' + \
             f'  sudo dpkg -i {self.args.package_name}_{self.args.version}_{self.args.arch}.deb\n' + \
@@ -155,6 +208,11 @@ class __DpkgPackager():
 
 
 def make(args: utils.PackagerArgs):
+    """Create a DPKG package using the DPKG package builder class
+
+    Args:
+        args (utils.PackagerArgs): Input arguments for the builder class
+    """
     packager = __DpkgPackager(args)
     packager.setup_workplace()
     packager.add_binary()

@@ -44,12 +44,36 @@ This project provides utility tools to create various packages and installers fo
 ## Requirements
  * python >3.9 - used to execute package generation scripts
  * [dpkg](https://tracker.debian.org/pkg/dpkg) - used to build .deb packages (not necessary, if you don't plan to build dpkg packages)
+ * [rpm](https://tracker.debian.org/pkg/rpm) - used to build .rpm packages (not necessary, if you don't plan to build rpm packages)
  * [NSIS](https://nsis.sourceforge.io/Main_Page) - Nullsoft Scriptable Install System, used to create windows installer wizard (not necessary, if you don't plan to build windows installers)
 
-To install all of the above mentioned requirements, please use the following commands:
+To install all of the above mentioned requirements on a debian based system, please use the following commands:
 
 ```bash
 sudo apt install dpkg nsis python3 unzip wget rpm -y
+```
+
+## Optional requirements
+ * sphinx - python documentation generator
+
+To install sphinx on a debian based system, please use the following commands:
+
+```bash
+sudo apt-get install python3-sphinx python3-sphinx-rtd-theme -y
+```
+
+This project provides an HTML based documentation using sphinx and read the docs theme. To generate a local copy, please run the following: 
+
+```bash
+cd docs
+make html
+```
+
+or if you are developing on windows
+
+```bash
+cd docs
+make.bat html
 ```
 
 ## Usage
@@ -97,6 +121,7 @@ Generated package usage (installation, update and removal) has been manually tes
 ## Project structure
 
 * `.vscode` - shared VSCode configuration files
+* `docs` - sphinx documentation files
 * `shared` - static files that are used by all packages/installers during creation 
 * `dpkg` - static and template files that are required for `.deb` package creation
 * `rpm` - static and template files that are required for `.rpm` package creation
