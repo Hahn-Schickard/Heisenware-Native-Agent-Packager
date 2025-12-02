@@ -62,6 +62,20 @@ To install sphinx on a debian based system, please use the following commands:
 sudo apt-get install python3-sphinx python3-sphinx-rtd-theme -y
 ```
 
+This project provides an HTML based documentation using sphinx and read the docs theme. To generate a local copy, please run the following: 
+
+```bash
+cd docs
+make html
+```
+
+or if you are developing on windows
+
+```bash
+cd docs
+make.bat html
+```
+
 ## Usage
 
 This script uses [`argparse`](https://docs.python.org/3/library/argparse.html) to specify, parse and verify user input arguments. Call `package_native_agent.py --help` to get a list of required arguments and their descriptions.
