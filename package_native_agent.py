@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Python Utility tool for Heisenware Native Agent Packager"""
 
 import argparse
 import sys
@@ -11,6 +12,11 @@ import modules.nsis as nsis
 
 
 def make_args():
+    """Create and parses command line arguments using Argparse module
+
+    Returns:
+        Namespace: Argparse argument namespace and their values
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         '--input_file',
@@ -97,7 +103,7 @@ if __name__ == '__main__':
                 print(f'Expected Openssl directory in {openssl_dir},'
                       ' but it does not exists', file=sys.stderr)
                 sys.exit(1)
-            
+
             nssm_binary = input_file.parent / 'nssm.exe'
             if not nssm_binary.exists():
                 print(f'Expected NSSM executable in {openssl_dir},'

@@ -1,9 +1,19 @@
+"""Utility module for other packager modules"""
+
 from pathlib import Path
 import shutil
 import os
 
 
 def make_clean_dir(path: Path, mode=0o755):
+    """Create a new directory in a given path
+
+    If directory already exists, deletes original content
+
+    Args:
+        path (Path): path to output directory
+        mode (octal, optional): directory permissions. Defaults to 0o755.
+    """
     if path.is_dir():
         shutil.rmtree(path)
 
@@ -17,6 +27,17 @@ def make_clean_dir(path: Path, mode=0o755):
 
 
 def read_file_content(path: Path):
+    """Read given file content
+
+    Args:
+        path (Path): path to input file
+
+    Raises:
+        FileNotFoundError: if given file does not exist
+
+    Returns:
+        string: untrimmed file content
+    """
     if not path.exists():
         raise FileNotFoundError(f'File {path} does not exist')
 
@@ -27,27 +48,53 @@ def read_file_content(path: Path):
 
 
 def write_file_content(path: Path, content: str, mode=0o744, nsis_escape=False):
-    if nsis_escape: 
-        content = content.replace(r'\'',r'$\'')
+    """Write given content to a given file
+
+    Args:
+        path (Path): path to output file
+        content (str): content to write
+        mode (octal, optional): file permissions. Defaults to 0o744.
+        nsis_escape (bool, optional): adds NSIS escape chars. Defaults to False.
+    """
+    if nsis_escape:
+        content = content.replace(r'\'', r'$\'')
     with open(file=path, mode='w', encoding='utf-8') as file:
         file.write(content)
     path.chmod(mode)
 
 
 def update_script(script_file: Path, service_name: str):
+    """Update a given script file with a given service name
+
+    Args:
+        script_file (Path): path to the maintainer script
+        service_name (str): service name that will replace {SERVICE_NAME} placeholders
+    """
     content = read_file_content(script_file)
     content = content.replace('{SERVICE_NAME}', service_name)
     write_file_content(script_file, content, mode=0o755)
 
 
 def get_directory_size(directory: Path):
+    """Calculate given directory size in bytes
+
+    Args:
+        directory (Path): target directory
+
+    Returns:
+        int: directory size in bytes
+    """
     size = 0
     for f in directory.rglob('*'):
         if f.is_file():
             size += f.stat().st_size
     return size
 
+
 class PackagerArgs:
+    """Package information arguments and paths to shared template files
+    """
+
     def __init__(self,
                  packager_dir: Path,
                  output_dir: Path,

@@ -1,3 +1,5 @@
+"""RPM Package Generator Module for Heisenware Linux Native Agents"""
+
 import shutil
 import subprocess
 from datetime import date
@@ -5,6 +7,8 @@ import modules.utils as utils
 
 
 class __RpmPackager():
+    """RPM Package Builder Class"""
+
     def __init__(self,
                  args: utils.PackagerArgs):
         self.args = args
@@ -18,6 +22,19 @@ class __RpmPackager():
             f'{self.args.package_name}.spec'
 
     def setup_workplace(self):
+        """Setup a temporary workplace for RPM package creation
+
+        The workplace will be created in 
+            [OUTPUT_DIR]/[PACKAGE_NAME]_[VERSION]_[ARCH]
+
+        The created workplace directory will contain shared linux general
+        as well as rpm template files
+
+        Sets correct directory and file permissions
+
+        Raises:
+            FileNotFoundError: if template files or output dir does not exist
+        """
         template_dir = self.args.packager_dir / 'rpm'
         if not template_dir.is_dir():
             raise FileNotFoundError(f'Directory {template_dir} does not exist')
@@ -34,9 +51,13 @@ class __RpmPackager():
         self.args.output_dir.chmod(0o755)
 
     def add_binary(self):
+        """Copy the Heisenware Native Agent binary into the package
+        """
         shutil.copy(src=self.args.binary_path, dst=self.args.output_dir)
 
     def update_specfile(self):
+        """Update the rpm specfile with package meta information 
+        """
         spec_file_template = self.args.output_dir / 'package_name.spec'
         spec_file_template.rename(self.spec_file)
 
@@ -58,6 +79,8 @@ class __RpmPackager():
         utils.write_file_content(self.spec_file, content, mode=0o644)
 
     def update_daemon(self):
+        """Update the systemctl daemon service file
+        """
         daemon_template = self.args.output_dir / 'daemon.service'
         daemon_service = self.args.output_dir / \
             f'{self.args.package_name}.service'
@@ -77,6 +100,11 @@ class __RpmPackager():
         utils.write_file_content(daemon_service, content, mode=0o644)
 
     def add_logrotate(self):
+        """Update logrotate configuration file
+
+        Set the logfile name to package name, place the configuration file in the
+        correct path
+        """
         config_file = self.args.output_dir / 'logrotate.conf'
 
         content = utils.read_file_content(config_file)
@@ -88,15 +116,24 @@ class __RpmPackager():
             self.args.output_dir / f'{self.args.package_name}')
 
     def add_license(self):
+        """Update license information
+        """
         shutil.copy(src=self.args.license_file, dst=self.args.output_dir)
         installed_license_file = self.args.output_dir / self.args.license_file.name
         installed_license_file.chmod(0o644)
 
     def build(self):
+        """Call the rpmbuild to build the rpm package
+
+        Remove the temporary workplace directory after successful build
+
+        Raises:
+            FileNotFoundError: if rpmbuild is not found
+        """
         rpm_found = subprocess.run(
             ['rpmbuild', '--version'], capture_output=True, check=False)
         if rpm_found.returncode != 0:
-            raise FileNotFoundError('makensis not found')
+            raise FileNotFoundError('rpmbuild not found')
 
         subprocess.run(
             ['rpmbuild',
@@ -119,6 +156,8 @@ class __RpmPackager():
         shutil.rmtree(self.args.output_dir)
 
     def document(self):
+        """Generate readme documentation for package (un)installation
+        """
         readme = self.args.output_dir.parent / 'README'
         package_name = f'{self.args.package_name}-{self.args.version}-1.{self.args.arch}.rpm'
         content = 'Run the following command to install the package:\n' + \
@@ -134,6 +173,11 @@ class __RpmPackager():
 
 
 def make(args: utils.PackagerArgs):
+    """Create a rpm package using the RPM package builder class
+
+    Args:
+        args (utils.PackagerArgs): Input arguments for the builder class
+    """
     packager = __RpmPackager(args)
     packager.setup_workplace()
     packager.add_binary()
