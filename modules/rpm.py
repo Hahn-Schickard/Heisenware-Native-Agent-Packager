@@ -5,6 +5,12 @@ import subprocess
 from datetime import date
 import modules.utils as utils
 
+# This error is known an expected when cross building rpm packages outside normal rpm environment
+RPM_DB_UNAVAILABLE_ERROR = \
+'''error: Unable to open sqlite database /var/lib/rpm/rpmdb.sqlite: unable to open database file
+error: cannot open Packages index using sqlite - Operation not permitted (1)
+error: cannot open Packages database in /var/lib/rpm'''
+
 
 class __RpmPackager():
     """RPM Package Builder Class"""
@@ -135,7 +141,7 @@ class __RpmPackager():
         if rpm_found.returncode != 0:
             raise FileNotFoundError('rpmbuild not found')
 
-        subprocess.run(
+        rpm_built = subprocess.run(
             ['rpmbuild',
              '--build-in-place',
              '--nodebuginfo',
@@ -145,8 +151,19 @@ class __RpmPackager():
              '--quiet'
              ],
             cwd=self.args.output_dir,
-            check=True
+            check=True,
+            capture_output=True,
+            text=True
         )
+
+        rpm_build_error = str(rpm_built.stderr)
+
+        # strip RPM_DB_UNAVAILABLE_ERROR from rpm build results
+        rpm_build_error = rpm_build_error.replace(RPM_DB_UNAVAILABLE_ERROR, '')
+        if not rpm_build_error:
+            print('Errors detected during rpmbuild:')
+            print(rpm_build_error)
+
         # rpmbuild --target expects aarch64-linux, but builds with aarch64 postfix
         self.args.arch = self.args.arch.replace('-linux', '')
         rpm_package_name = f'{self.args.package_name}-{self.args.version}-1.{self.args.arch}.rpm'
