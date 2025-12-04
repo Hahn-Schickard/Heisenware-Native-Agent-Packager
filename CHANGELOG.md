@@ -1,4 +1,12 @@
 # Changelog
+## [1.0.0] - 2025.12.04
+### Added
+ - Sphinx documentation for API, features, requirements and usage
+ - Sphinx setup and API generation documentation in `README.md`  
+ - Github Pages Workflow for Sphinx Documentation
+ - Python docstrings for python modules and functions
+ - suppression for RPM unable to open sqlite database error in `__RpmPackager.build()` 
+
 ## [0.3.0] - 2025.11.19
 ### Fixed
  - Windows installer not removing `INSTDIR`
