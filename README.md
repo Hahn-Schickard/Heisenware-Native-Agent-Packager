@@ -76,6 +76,12 @@ cd docs
 make.bat html
 ```
 
+In case you added new modules or removed old ones, run the following command to update the Sphinx API documentation and afterwards, rebuild the documentation with make
+
+```bash
+sphinx-apidoc -P -o docs/source/ .
+```
+
 ## Usage
 
 This script uses [`argparse`](https://docs.python.org/3/library/argparse.html) to specify, parse and verify user input arguments. Call `package_native_agent.py --help` to get a list of required arguments and their descriptions.
