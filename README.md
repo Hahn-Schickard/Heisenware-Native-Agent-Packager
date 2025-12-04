@@ -1,6 +1,9 @@
 # Heisenware-Native-Agent-Packager
 This project provides utility tools to create various packages and installers for Heisenware Native Agents
 
+## Documentation
+You can find the latest release documentation on [Github-Pages](https://hahn-schickard.github.io/Heisenware-Native-Agent-Packager)
+
 ## Features
  * Generates `.deb` packages with:
     * Daemon service that:
